@@ -1,19 +1,38 @@
 import { Redis } from "@upstash/redis";
 
-// L'intégration Upstash sur Vercel injecte ces variables automatiquement.
-// On accepte les deux conventions de nommage (UPSTASH_* ou KV_*).
-const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+// Détection robuste des identifiants Upstash, quel que soit le préfixe que
+// l'intégration Vercel a ajouté (ex: UPSTASH_REDIS_REST_KV_REST_API_URL).
+function findEnv(test) {
+  for (const [k, v] of Object.entries(process.env)) {
+    if (v && test(k)) return v;
+  }
+  return undefined;
+}
+
+// URL REST (https://...) : on prend la variable se terminant par REST_API_URL.
+const url =
+  process.env.UPSTASH_REDIS_REST_KV_REST_API_URL ||
+  process.env.KV_REST_API_URL ||
+  process.env.UPSTASH_REDIS_REST_URL ||
+  findEnv((k) => /REST_API_URL$/.test(k));
+
+// Token en LECTURE/ÉCRITURE : terminant par REST_API_TOKEN, jamais READ_ONLY.
+const token =
+  process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN ||
+  process.env.KV_REST_API_TOKEN ||
+  process.env.UPSTASH_REDIS_REST_TOKEN ||
+  findEnv((k) => /REST_API_TOKEN$/.test(k) && !/READ_ONLY/.test(k));
+
 const redis = url && token ? new Redis({ url, token }) : null;
 
-const PREFIX = "sy:"; // espace de noms pour éviter les collisions
+const PREFIX = "sy:"; // espace de noms
 const TTL = 60 * 60 * 24; // les parties expirent après 24 h
 
 export default async function handler(req, res) {
   if (!redis) {
     res.status(500).json({
       error:
-        "Base Redis non configurée. Ajoutez l'intégration Upstash (Vercel → Storage → Marketplace) puis redéployez.",
+        "Base Redis non configurée : variables Upstash introuvables. Vérifiez l'intégration Upstash dans Vercel, puis redéployez.",
     });
     return;
   }
