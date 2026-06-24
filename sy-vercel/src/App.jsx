@@ -66,8 +66,12 @@ function xMoves(pos, detPos, hasBlack) {
 
 /* ===================== INITIALISATION DE PARTIE ===================== */
 function startGame(state) {
-  const dPlayers = state.players.filter((p) => p.role === "detective");
-  const xPlayer = state.players.find((p) => p.role === "mrx");
+  let dPlayers = state.players.filter((p) => p.role === "detective");
+  let xPlayer = state.players.find((p) => p.role === "mrx");
+  if (state.mode === "hotseat" && state.players.length > 0 && (!xPlayer || dPlayers.length === 0)) {
+    xPlayer = xPlayer || state.players[0];
+    dPlayers = dPlayers.length > 0 ? dPlayers : [state.players[0]];
+  }
   if (!xPlayer || dPlayers.length === 0) return null;
   const P = Math.max(2, Math.min(5, state.config.detectivePawns));
   const cards = [...BOARD.startCards].sort(() => Math.random() - 0.5);
@@ -277,7 +281,7 @@ function Lobby({ state, myId, code, mode, commit, startTheGame }) {
     return s;
   });
   const setPawns = (n) => commit((s) => { s.config.detectivePawns = n; return s; });
-  const canStart = xTaken && dPlayers.length >= 1;
+  const canStart = mode === "hotseat" || (xTaken && dPlayers.length >= 1);
   const copyCode = () => { try { navigator.clipboard.writeText(code); } catch (e) {} };
 
   return (
@@ -290,7 +294,7 @@ function Lobby({ state, myId, code, mode, commit, startTheGame }) {
             <button onClick={copyCode} className="text-2xl font-black tracking-[0.4em] bg-slate-900 border border-slate-700 rounded-lg px-4 py-1 hover:border-[#e2231a]">{code}</button>
             <span className="text-xs text-slate-500">(toucher pour copier)</span>
           </div>
-        ) : <p className="text-slate-400 text-sm mb-6">Mode même écran — on se passe l'appareil à chaque tour.</p>}
+        ) : <p className="text-slate-400 text-sm mb-6">Mode même écran — on se passe l'appareil à chaque tour. La sélection de rôle est optionnelle : vous contrôlerez tout.</p>}
 
         <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 mb-4">
           <p className="text-xs uppercase tracking-widest text-slate-400 mb-3">Joueurs ({state.players.length})</p>
@@ -344,9 +348,14 @@ function Game({ state, myId, mode, commit, code }) {
   const [selPawn, setSelPawn] = useState(null);
   const [useBlack, setUseBlack] = useState(false);
   const [doubleMove, setDoubleMove] = useState(false);
-  const [pendingTo, setPendingTo] = useState(null); // {to, types}
-  const [zoom, setZoom] = useState(820);
-  const [hideX, setHideX] = useState(false); // interstitiel hotseat
+  const [pendingTo, setPendingTo] = useState(null);
+  const [zoom, setZoom] = useState(1400);
+  const [hideX, setHideX] = useState(false);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
+  const isPanningRef = useRef(false);
+  const dragMoved = useRef(false);
 
   const isXTurn = state.turn === "mrx";
   const iControlX = me?.role === "mrx" || mode === "hotseat";
@@ -392,7 +401,23 @@ function Game({ state, myId, mode, commit, code }) {
     }
   }, [state.phase, isXTurn, iControlX]);
 
+  const onPanStart = (e) => {
+    dragMoved.current = false;
+    isPanningRef.current = true;
+    setIsPanning(true);
+    panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y, origX: e.clientX, origY: e.clientY };
+  };
+  const onPanMove = (e) => {
+    if (!isPanningRef.current) return;
+    const dx = e.clientX - panStart.current.origX;
+    const dy = e.clientY - panStart.current.origY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved.current = true;
+    setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
+  };
+  const onPanEnd = () => { isPanningRef.current = false; setIsPanning(false); };
+
   const onNodeClick = (id) => {
+    if (dragMoved.current) return;
     if (state.phase !== "playing") return;
     const types = legal[id];
     if (!types || !types.length) return;
@@ -463,13 +488,23 @@ function Game({ state, myId, mode, commit, code }) {
         {/* PLATEAU */}
         <div className="flex-1 p-3">
           <div className="flex items-center gap-2 mb-2">
-            <button onClick={() => setZoom((z) => Math.max(520, z - 140))} className="w-8 h-8 rounded bg-slate-800 font-bold">−</button>
-            <button onClick={() => setZoom((z) => Math.min(1700, z + 140))} className="w-8 h-8 rounded bg-slate-800 font-bold">+</button>
-            <span className="text-xs text-slate-500">Faites défiler pour explorer la carte</span>
+            <button onClick={() => setZoom((z) => Math.max(700, z - 180))} className="w-8 h-8 rounded bg-slate-800 font-bold text-lg leading-none">−</button>
+            <button onClick={() => setZoom((z) => Math.min(2800, z + 180))} className="w-8 h-8 rounded bg-slate-800 font-bold text-lg leading-none">+</button>
+            <button onClick={() => setPan({ x: 0, y: 0 })} className="px-2 h-8 rounded bg-slate-800 text-xs">Recentrer</button>
+            <span className="text-xs text-slate-500">Glisser pour naviguer · +/− pour zoomer</span>
           </div>
-          <div className="overflow-auto rounded-xl border border-slate-800 bg-[#0b1220]" style={{ maxHeight: "72vh" }}>
-            <BoardSVG width={zoom} state={state} legal={legal} onNodeClick={onNodeClick}
-              showXTrue={showXTrue} selPawn={selPawn} hideX={hideX} />
+          <div
+            className="rounded-xl border border-slate-700"
+            style={{ height: "74vh", overflow: "hidden", cursor: isPanning ? "grabbing" : "grab", position: "relative", background: "#ddd8cc" }}
+            onMouseDown={onPanStart}
+            onMouseMove={onPanMove}
+            onMouseUp={onPanEnd}
+            onMouseLeave={onPanEnd}
+          >
+            <div style={{ transform: `translate(${pan.x}px, ${pan.y}px)`, display: "inline-block", userSelect: "none" }}>
+              <BoardSVG width={zoom} state={state} legal={legal} onNodeClick={onNodeClick}
+                showXTrue={showXTrue} selPawn={selPawn} hideX={hideX} />
+            </div>
           </div>
           <Legend />
         </div>
@@ -569,56 +604,166 @@ function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX 
   const xTrue = state.mrx?.pos;
 
   const edgeColor = (e) => e.type === "metro" ? (LINE_COLORS[e.line] || TYPE_COLORS.metro) : TYPE_COLORS[e.type];
+  const edgeW = { taxi: 1.6, bus: 3.5, tram: 4, boat: 3, metro: 6 };
+
+  /* Presqu'île = polygone entre Saône et Rhône */
+  const saone = BOARD.rivers[0].pts;
+  const rhone = BOARD.rivers[1].pts;
+  const peninsula = [...saone, ...[...rhone].reverse()].map(p => p.join(",")).join(" ");
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={width} height={width * H / W} style={{ display: "block", minWidth: 520 }}>
-      {/* rivières */}
-      {BOARD.rivers.map((r, i) => (
-        <polyline key={i} points={r.pts.map((p) => p.join(",")).join(" ")} fill="none" stroke="#1d3a5f" strokeWidth="14" strokeLinecap="round" opacity="0.7" />
+    <svg viewBox={`0 0 ${W} ${H}`} width={width} height={width * H / W} style={{ display: "block" }}>
+      <defs>
+        {/* Grille de rues */}
+        <pattern id="streetGrid" x="0" y="0" width="44" height="44" patternUnits="userSpaceOnUse">
+          <line x1="44" y1="0" x2="0" y2="0" stroke="#c0bbb0" strokeWidth="0.35" />
+          <line x1="0" y1="0" x2="0" y2="44" stroke="#c0bbb0" strokeWidth="0.35" />
+        </pattern>
+        {/* Gradient eau */}
+        <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#5ba3d4" />
+          <stop offset="50%" stopColor="#7bbee8" />
+          <stop offset="100%" stopColor="#5ba3d4" />
+        </linearGradient>
+      </defs>
+
+      {/* ── Fond carte ── */}
+      <rect x="0" y="0" width={W} height={H} fill="#e8e3d8" />
+      <rect x="0" y="0" width={W} height={H} fill="url(#streetGrid)" />
+
+      {/* Blocs urbains (zones bâties hachurées) */}
+      {[
+        [0,0,290,270],[300,0,220,260],[530,0,230,260],[770,0,200,260],
+        [0,280,280,260],[560,280,200,260],[770,280,200,260],
+        [0,560,280,260],[560,560,200,260],[770,560,200,260],
+        [0,840,280,135],[560,840,200,135],[770,840,200,135],
+      ].map(([x,y,w,h],i) => (
+        <rect key={i} x={x} y={y} width={w} height={h} rx="2"
+          fill="#ddd8cc" stroke="#cac5ba" strokeWidth="0.6" opacity="0.65" />
       ))}
-      {/* arêtes par type (taxi dessous) */}
-      {["taxi", "bus", "tram", "boat", "metro"].map((tp) =>
-        BOARD.edges.filter((e) => e.type === tp).map((e, i) => {
+
+      {/* Presqu'île (entre les deux fleuves) */}
+      <polygon points={peninsula} fill="#e2ddd2" opacity="0.85" />
+
+      {/* Espaces verts (parcs approximatifs) */}
+      <ellipse cx="155" cy="175" rx="50" ry="38" fill="#a8cc88" opacity="0.55" />
+      <ellipse cx="735" cy="155" rx="62" ry="42" fill="#a8cc88" opacity="0.55" />
+      <ellipse cx="870" cy="460" rx="38" ry="52" fill="#a8cc88" opacity="0.5" />
+      <ellipse cx="415" cy="760" rx="32" ry="26" fill="#a8cc88" opacity="0.5" />
+      <ellipse cx="80" cy="670" rx="28" ry="35" fill="#a8cc88" opacity="0.45" />
+      <text x="155" y="178" textAnchor="middle" fontSize="9" fill="#3a6e20" opacity="0.75" fontStyle="italic">Parc</text>
+      <text x="735" y="158" textAnchor="middle" fontSize="9" fill="#3a6e20" opacity="0.75" fontStyle="italic">Tête d'Or</text>
+
+      {/* ── Fleuves (3 couches : halo + corps + reflet) ── */}
+      {BOARD.rivers.map((r, i) => (
+        <polyline key={"rh"+i} points={r.pts.map(p => p.join(",")).join(" ")}
+          fill="none" stroke="#6aaee0" strokeWidth="40" strokeLinecap="round" opacity="0.25" />
+      ))}
+      {BOARD.rivers.map((r, i) => (
+        <polyline key={"rb"+i} points={r.pts.map(p => p.join(",")).join(" ")}
+          fill="none" stroke="#4a92c8" strokeWidth="26" strokeLinecap="round" opacity="0.7" />
+      ))}
+      {BOARD.rivers.map((r, i) => (
+        <polyline key={"rl"+i} points={r.pts.map(p => p.join(",")).join(" ")}
+          fill="none" stroke="#88c4e8" strokeWidth="9" strokeLinecap="round" opacity="0.5" />
+      ))}
+
+      {/* Noms des fleuves */}
+      <text x="288" y="490" fontSize="12" fill="#1e5080" opacity="0.8" fontStyle="italic" fontWeight="600"
+        transform="rotate(-89 288 490)" textAnchor="middle">Saône</text>
+      <text x="494" y="490" fontSize="12" fill="#1e5080" opacity="0.8" fontStyle="italic" fontWeight="600"
+        transform="rotate(-89 494 490)" textAnchor="middle">Rhône</text>
+
+      {/* ── Arêtes transport ── */}
+      {/* Taxi en dessous */}
+      {BOARD.edges.filter(e => e.type === "taxi").map((e, i) => {
+        const a = NODE[e.a], b = NODE[e.b];
+        return <line key={"tx"+i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+          stroke="#a89050" strokeWidth="1.6" opacity="0.45" strokeLinecap="round" />;
+      })}
+      {/* Bus, tram, bateau, métro */}
+      {["bus","tram","boat","metro"].map(tp =>
+        BOARD.edges.filter(e => e.type === tp).map((e, i) => {
           const a = NODE[e.a], b = NODE[e.b];
-          return <line key={tp + i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-            stroke={edgeColor(e)} strokeWidth={tp === "metro" ? 3.4 : tp === "taxi" ? 1.1 : 2}
-            opacity={tp === "taxi" ? 0.45 : 0.85} strokeDasharray={tp === "boat" ? "5 5" : undefined} strokeLinecap="round" />;
+          const col = edgeColor(e);
+          return (
+            <g key={tp+i}>
+              {/* Ombre de ligne */}
+              <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                stroke="#00000030" strokeWidth={edgeW[tp]+2} strokeLinecap="round" />
+              <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                stroke={col} strokeWidth={edgeW[tp]} opacity={0.92}
+                strokeDasharray={tp === "boat" ? "8 6" : undefined} strokeLinecap="round" />
+            </g>
+          );
         })
       )}
-      {/* noeuds */}
+
+      {/* ── Nœuds ── */}
       {BOARD.nodes.map((n) => {
         const isLegal = !!legal[n.id];
-        const det = detByPos[n.id];
         return (
           <g key={n.id} onClick={() => onNodeClick(n.id)} style={{ cursor: isLegal ? "pointer" : "default" }}>
-            {isLegal && <circle cx={n.x} cy={n.y} r="15" fill="none" stroke="#fde047" strokeWidth="2.5" opacity="0.95" />}
-            <circle cx={n.x} cy={n.y} r={n.metro ? 9 : 7} fill={n.metro ? "#111827" : "#0f172a"} stroke={n.metro ? "#e5e7eb" : "#475569"} strokeWidth={n.metro ? 2 : 1.2} />
-            <text x={n.x} y={n.y + 3} textAnchor="middle" fontSize="8" fill="#cbd5e1" fontWeight="600">{n.id}</text>
-            {n.name && <text x={n.x} y={n.y - 12} textAnchor="middle" fontSize="8.5" fill="#93c5fd" fontWeight="700">{n.name}</text>}
+            {isLegal && (
+              <>
+                <circle cx={n.x} cy={n.y} r="20" fill="#fde04720" stroke="none" />
+                <circle cx={n.x} cy={n.y} r="17" fill="none" stroke="#fde047" strokeWidth="2.5" opacity="0.95" />
+              </>
+            )}
+            {/* Corps du nœud */}
+            <circle cx={n.x} cy={n.y} r={n.metro ? 12 : 9}
+              fill={n.metro ? "#1a2540" : "#2d3a50"}
+              stroke={n.metro ? "#e8ecf4" : "#8899b0"}
+              strokeWidth={n.metro ? 2.5 : 1.5} />
+            <text x={n.x} y={n.y + 4} textAnchor="middle" fontSize={n.metro ? 9.5 : 8}
+              fill="#dce8f8" fontWeight="700">{n.id}</text>
+            {/* Nom station métro avec fond */}
+            {n.name && (
+              <g>
+                <rect x={n.x - 42} y={n.y - 28} width="84" height="14" rx="3" fill="#1a254088" />
+                <text x={n.x} y={n.y - 18} textAnchor="middle" fontSize="10" fill="#93c5fd" fontWeight="700">{n.name}</text>
+              </g>
+            )}
           </g>
         );
       })}
-      {/* dernière position connue de X (mémo détectives) */}
+
+      {/* Dernière position connue de X */}
       {xRevealed && (!showXTrue || xRevealed !== xTrue) && (
         <g>
-          <circle cx={NODE[xRevealed].x} cy={NODE[xRevealed].y} r="13" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="3 3" />
-          <text x={NODE[xRevealed].x} y={NODE[xRevealed].y - 18} textAnchor="middle" fontSize="8" fill="#f59e0b" fontWeight="700">vu T{state.mrx.revealedRound}</text>
+          <circle cx={NODE[xRevealed].x} cy={NODE[xRevealed].y} r="18"
+            fill="#f59e0b18" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4 3" />
+          <rect x={NODE[xRevealed].x - 28} y={NODE[xRevealed].y - 28} width="56" height="12" rx="2" fill="#92400e" />
+          <text x={NODE[xRevealed].x} y={NODE[xRevealed].y - 19} textAnchor="middle" fontSize="9" fill="#fde68a" fontWeight="700">
+            vu T{state.mrx.revealedRound}
+          </text>
         </g>
       )}
-      {/* pions détectives */}
-      {state.detectives?.map((d) => (
-        <g key={d.id}>
-          <circle cx={NODE[d.pos].x} cy={NODE[d.pos].y} r="9" fill={d.color} stroke="#0b1220" strokeWidth="2" opacity={selPawn === d.id ? 1 : 0.92} />
-          <text x={NODE[d.pos].x} y={NODE[d.pos].y + 3} textAnchor="middle" fontSize="9" fill="#0b1220" fontWeight="900">{d.label}</text>
-        </g>
-      ))}
-      {/* Mister X (visible uniquement par lui) */}
-      {showXTrue && xTrue && !hideX && (
-        <g>
-          <circle cx={NODE[xTrue].x} cy={NODE[xTrue].y} r="11" fill="#111827" stroke="#e2231a" strokeWidth="3" />
-          <text x={NODE[xTrue].x} y={NODE[xTrue].y + 4} textAnchor="middle" fontSize="11" fill="#e2231a" fontWeight="900">X</text>
-        </g>
-      )}
+
+      {/* Pions détectives */}
+      {state.detectives?.map((d) => {
+        const n = NODE[d.pos];
+        const isSelected = selPawn === d.id;
+        return (
+          <g key={d.id}>
+            {isSelected && <circle cx={n.x} cy={n.y} r="17" fill="none" stroke="#ffffff60" strokeWidth="2" strokeDasharray="3 2" />}
+            <circle cx={n.x} cy={n.y} r="13" fill={d.color} stroke="#fff" strokeWidth="2.5" opacity={isSelected ? 1 : 0.88} />
+            <text x={n.x} y={n.y + 4.5} textAnchor="middle" fontSize="12" fill="#0f172a" fontWeight="900">{d.label}</text>
+          </g>
+        );
+      })}
+
+      {/* Mister X */}
+      {showXTrue && xTrue && !hideX && (() => {
+        const n = NODE[xTrue];
+        return (
+          <g>
+            <circle cx={n.x} cy={n.y} r="18" fill="#e2231a30" stroke="none" />
+            <circle cx={n.x} cy={n.y} r="14" fill="#1a0a0a" stroke="#e2231a" strokeWidth="3.5" />
+            <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="14" fill="#e2231a" fontWeight="900">X</text>
+          </g>
+        );
+      })()}
     </svg>
   );
 }
