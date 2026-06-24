@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 /* ===================== DONNÉES DU PLATEAU ===================== */
-const BOARD = {"seed":71623,"width":971,"height":975,"nodes":[{"id":1,"x":63,"y":55},{"id":2,"x":167,"y":55},{"id":3,"x":240,"y":65},{"id":4,"x":311,"y":71},{"id":5,"x":409,"y":47},{"id":6,"x":627,"y":47},{"id":7,"x":697,"y":58,"name":"Vieux Lyon","metro":true},{"id":8,"x":816,"y":79,"name":"Monplaisir","metro":true},{"id":9,"x":889,"y":77},{"id":10,"x":53,"y":148},{"id":11,"x":150,"y":128},{"id":12,"x":252,"y":138},{"id":13,"x":318,"y":139,"name":"Foch","metro":true},{"id":14,"x":445,"y":132},{"id":15,"x":528,"y":130,"name":"Cordeliers","metro":true},{"id":16,"x":617,"y":137},{"id":17,"x":725,"y":127},{"id":18,"x":773,"y":149},{"id":19,"x":911,"y":127},{"id":20,"x":42,"y":192},{"id":21,"x":151,"y":218},{"id":22,"x":341,"y":188},{"id":23,"x":439,"y":195},{"id":24,"x":513,"y":207},{"id":25,"x":636,"y":184},{"id":26,"x":719,"y":194},{"id":27,"x":801,"y":216},{"id":28,"x":868,"y":201,"name":"Guillotière","metro":true},{"id":29,"x":83,"y":273},{"id":30,"x":127,"y":272},{"id":31,"x":219,"y":270},{"id":32,"x":332,"y":264},{"id":33,"x":424,"y":252,"name":"Perrache","metro":true},{"id":34,"x":509,"y":281},{"id":35,"x":620,"y":288},{"id":36,"x":708,"y":284},{"id":37,"x":777,"y":283},{"id":38,"x":52,"y":342},{"id":39,"x":137,"y":340},{"id":40,"x":228,"y":353},{"id":41,"x":311,"y":328},{"id":42,"x":453,"y":338,"name":"Brotteaux","metro":true},{"id":43,"x":524,"y":322},{"id":44,"x":604,"y":349},{"id":45,"x":690,"y":353},{"id":46,"x":771,"y":357},{"id":47,"x":883,"y":333},{"id":48,"x":73,"y":410},{"id":49,"x":147,"y":403},{"id":50,"x":263,"y":391},{"id":51,"x":317,"y":429},{"id":52,"x":403,"y":429},{"id":53,"x":504,"y":411,"name":"Grange Blanche","metro":true},{"id":54,"x":726,"y":417},{"id":55,"x":810,"y":399},{"id":56,"x":911,"y":396,"name":"Charpennes","metro":true},{"id":57,"x":53,"y":486},{"id":58,"x":167,"y":486},{"id":59,"x":220,"y":473},{"id":60,"x":353,"y":462},{"id":61,"x":427,"y":477},{"id":62,"x":544,"y":482},{"id":63,"x":604,"y":488,"name":"Vénissieux","metro":true},{"id":64,"x":722,"y":474},{"id":65,"x":819,"y":477,"name":"Gratte-Ciel","metro":true},{"id":66,"x":909,"y":491},{"id":67,"x":62,"y":553},{"id":68,"x":164,"y":563},{"id":69,"x":246,"y":542,"name":"Croix-Rousse","metro":true},{"id":70,"x":449,"y":533},{"id":71,"x":501,"y":568},{"id":72,"x":614,"y":565,"name":"Gerland","metro":true},{"id":73,"x":704,"y":540},{"id":74,"x":777,"y":565},{"id":75,"x":896,"y":558},{"id":76,"x":52,"y":624},{"id":77,"x":140,"y":602},{"id":78,"x":235,"y":603},{"id":79,"x":352,"y":616},{"id":80,"x":440,"y":612},{"id":81,"x":502,"y":629},{"id":82,"x":624,"y":628},{"id":83,"x":690,"y":607},{"id":84,"x":799,"y":638},{"id":85,"x":893,"y":633},{"id":86,"x":157,"y":677},{"id":87,"x":269,"y":705,"name":"Part-Dieu","metro":true},{"id":88,"x":317,"y":696},{"id":89,"x":410,"y":698},{"id":90,"x":501,"y":698},{"id":91,"x":605,"y":702},{"id":92,"x":714,"y":707},{"id":93,"x":775,"y":688},{"id":94,"x":905,"y":681},{"id":95,"x":52,"y":749},{"id":96,"x":135,"y":756},{"id":97,"x":265,"y":765},{"id":98,"x":311,"y":768},{"id":99,"x":413,"y":766},{"id":100,"x":495,"y":763},{"id":101,"x":632,"y":779},{"id":102,"x":781,"y":744},{"id":103,"x":886,"y":755,"name":"Saxe-Gambetta","metro":true},{"id":104,"x":56,"y":822},{"id":105,"x":142,"y":839},{"id":106,"x":243,"y":814},{"id":107,"x":329,"y":824},{"id":108,"x":420,"y":848},{"id":109,"x":518,"y":835,"name":"Jean Macé","metro":true},{"id":110,"x":634,"y":816},{"id":111,"x":684,"y":812},{"id":112,"x":793,"y":842},{"id":113,"x":881,"y":847},{"id":114,"x":66,"y":903},{"id":115,"x":150,"y":899,"name":"Bellecour","metro":true},{"id":116,"x":240,"y":890},{"id":117,"x":355,"y":887},{"id":118,"x":520,"y":914,"name":"Hôtel de Ville","metro":true},{"id":119,"x":611,"y":895},{"id":120,"x":708,"y":915},{"id":121,"x":810,"y":900},{"id":122,"x":897,"y":908}],"edges":[{"a":1,"b":10,"type":"taxi","line":null},{"a":1,"b":2,"type":"taxi","line":null},{"a":1,"b":11,"type":"taxi","line":null},{"a":1,"b":20,"type":"taxi","line":null},{"a":2,"b":3,"type":"taxi","line":null},{"a":2,"b":11,"type":"taxi","line":null},{"a":2,"b":12,"type":"taxi","line":null},{"a":2,"b":4,"type":"taxi","line":null},{"a":3,"b":4,"type":"taxi","line":null},{"a":3,"b":12,"type":"taxi","line":null},{"a":3,"b":13,"type":"taxi","line":null},{"a":3,"b":11,"type":"taxi","line":null},{"a":4,"b":13,"type":"taxi","line":null},{"a":4,"b":12,"type":"taxi","line":null},{"a":4,"b":5,"type":"taxi","line":null},{"a":4,"b":22,"type":"taxi","line":null},{"a":5,"b":14,"type":"taxi","line":null},{"a":5,"b":13,"type":"taxi","line":null},{"a":5,"b":15,"type":"taxi","line":null},{"a":5,"b":23,"type":"taxi","line":null},{"a":6,"b":7,"type":"taxi","line":null},{"a":6,"b":16,"type":"taxi","line":null},{"a":6,"b":17,"type":"taxi","line":null},{"a":6,"b":15,"type":"taxi","line":null},{"a":7,"b":17,"type":"taxi","line":null},{"a":7,"b":16,"type":"taxi","line":null},{"a":7,"b":18,"type":"taxi","line":null},{"a":7,"b":8,"type":"taxi","line":null},{"a":8,"b":9,"type":"taxi","line":null},{"a":8,"b":18,"type":"taxi","line":null},{"a":8,"b":17,"type":"taxi","line":null},{"a":8,"b":19,"type":"taxi","line":null},{"a":9,"b":19,"type":"taxi","line":null},{"a":9,"b":28,"type":"taxi","line":null},{"a":9,"b":18,"type":"taxi","line":null},{"a":9,"b":27,"type":"taxi","line":null},{"a":10,"b":20,"type":"taxi","line":null},{"a":10,"b":11,"type":"taxi","line":null},{"a":10,"b":21,"type":"taxi","line":null},{"a":10,"b":29,"type":"taxi","line":null},{"a":11,"b":21,"type":"taxi","line":null},{"a":11,"b":12,"type":"taxi","line":null},{"a":11,"b":20,"type":"taxi","line":null},{"a":11,"b":30,"type":"taxi","line":null},{"a":12,"b":13,"type":"taxi","line":null},{"a":12,"b":22,"type":"taxi","line":null},{"a":12,"b":21,"type":"taxi","line":null},{"a":12,"b":31,"type":"taxi","line":null},{"a":13,"b":22,"type":"taxi","line":null},{"a":13,"b":32,"type":"taxi","line":null},{"a":13,"b":14,"type":"taxi","line":null},{"a":13,"b":23,"type":"taxi","line":null},{"a":14,"b":23,"type":"taxi","line":null},{"a":14,"b":15,"type":"taxi","line":null},{"a":14,"b":24,"type":"taxi","line":null},{"a":14,"b":22,"type":"taxi","line":null},{"a":15,"b":24,"type":"taxi","line":null},{"a":15,"b":16,"type":"taxi","line":null},{"a":15,"b":23,"type":"taxi","line":null},{"a":15,"b":25,"type":"taxi","line":null},{"a":16,"b":25,"type":"taxi","line":null},{"a":16,"b":17,"type":"taxi","line":null},{"a":16,"b":26,"type":"taxi","line":null},{"a":16,"b":24,"type":"taxi","line":null},{"a":17,"b":18,"type":"taxi","line":null},{"a":17,"b":26,"type":"taxi","line":null},{"a":17,"b":25,"type":"taxi","line":null},{"a":17,"b":27,"type":"taxi","line":null},{"a":18,"b":26,"type":"taxi","line":null},{"a":18,"b":27,"type":"taxi","line":null},{"a":18,"b":28,"type":"taxi","line":null},{"a":18,"b":37,"type":"taxi","line":null},{"a":19,"b":28,"type":"taxi","line":null},{"a":19,"b":18,"type":"taxi","line":null},{"a":19,"b":27,"type":"taxi","line":null},{"a":20,"b":29,"type":"taxi","line":null},{"a":20,"b":21,"type":"taxi","line":null},{"a":20,"b":30,"type":"taxi","line":null},{"a":20,"b":38,"type":"taxi","line":null},{"a":21,"b":30,"type":"taxi","line":null},{"a":21,"b":31,"type":"taxi","line":null},{"a":21,"b":29,"type":"taxi","line":null},{"a":21,"b":39,"type":"taxi","line":null},{"a":22,"b":32,"type":"taxi","line":null},{"a":22,"b":23,"type":"taxi","line":null},{"a":22,"b":33,"type":"taxi","line":null},{"a":22,"b":41,"type":"taxi","line":null},{"a":23,"b":33,"type":"taxi","line":null},{"a":23,"b":24,"type":"taxi","line":null},{"a":23,"b":34,"type":"taxi","line":null},{"a":23,"b":32,"type":"taxi","line":null},{"a":24,"b":34,"type":"taxi","line":null},{"a":24,"b":33,"type":"taxi","line":null},{"a":24,"b":43,"type":"taxi","line":null},{"a":24,"b":25,"type":"taxi","line":null},{"a":25,"b":26,"type":"taxi","line":null},{"a":25,"b":35,"type":"taxi","line":null},{"a":25,"b":36,"type":"taxi","line":null},{"a":25,"b":6,"type":"taxi","line":null},{"a":26,"b":27,"type":"taxi","line":null},{"a":26,"b":36,"type":"taxi","line":null},{"a":26,"b":37,"type":"taxi","line":null},{"a":26,"b":35,"type":"taxi","line":null},{"a":27,"b":28,"type":"taxi","line":null},{"a":27,"b":37,"type":"taxi","line":null},{"a":27,"b":36,"type":"taxi","line":null},{"a":27,"b":8,"type":"taxi","line":null},{"a":28,"b":37,"type":"taxi","line":null},{"a":28,"b":8,"type":"taxi","line":null},{"a":28,"b":47,"type":"taxi","line":null},{"a":28,"b":26,"type":"taxi","line":null},{"a":29,"b":30,"type":"taxi","line":null},{"a":29,"b":38,"type":"taxi","line":null},{"a":29,"b":39,"type":"taxi","line":null},{"a":29,"b":31,"type":"taxi","line":null},{"a":30,"b":39,"type":"taxi","line":null},{"a":30,"b":31,"type":"taxi","line":null},{"a":30,"b":38,"type":"taxi","line":null},{"a":30,"b":40,"type":"taxi","line":null},{"a":31,"b":40,"type":"taxi","line":null},{"a":31,"b":39,"type":"taxi","line":null},{"a":31,"b":41,"type":"taxi","line":null},{"a":31,"b":32,"type":"taxi","line":null},{"a":32,"b":41,"type":"taxi","line":null},{"a":32,"b":33,"type":"taxi","line":null},{"a":32,"b":40,"type":"taxi","line":null},{"a":32,"b":42,"type":"taxi","line":null},{"a":33,"b":34,"type":"taxi","line":null},{"a":33,"b":42,"type":"taxi","line":null},{"a":33,"b":14,"type":"taxi","line":null},{"a":33,"b":43,"type":"taxi","line":null},{"a":34,"b":43,"type":"taxi","line":null},{"a":34,"b":42,"type":"taxi","line":null},{"a":34,"b":35,"type":"taxi","line":null},{"a":34,"b":44,"type":"taxi","line":null},{"a":35,"b":44,"type":"taxi","line":null},{"a":35,"b":36,"type":"taxi","line":null},{"a":35,"b":45,"type":"taxi","line":null},{"a":35,"b":43,"type":"taxi","line":null},{"a":36,"b":37,"type":"taxi","line":null},{"a":36,"b":45,"type":"taxi","line":null},{"a":36,"b":46,"type":"taxi","line":null},{"a":36,"b":44,"type":"taxi","line":null},{"a":37,"b":46,"type":"taxi","line":null},{"a":37,"b":45,"type":"taxi","line":null},{"a":37,"b":47,"type":"taxi","line":null},{"a":37,"b":55,"type":"taxi","line":null},{"a":38,"b":48,"type":"taxi","line":null},{"a":38,"b":39,"type":"taxi","line":null},{"a":38,"b":49,"type":"taxi","line":null},{"a":38,"b":57,"type":"taxi","line":null},{"a":39,"b":49,"type":"taxi","line":null},{"a":39,"b":40,"type":"taxi","line":null},{"a":39,"b":48,"type":"taxi","line":null},{"a":39,"b":50,"type":"taxi","line":null},{"a":40,"b":50,"type":"taxi","line":null},{"a":40,"b":41,"type":"taxi","line":null},{"a":40,"b":49,"type":"taxi","line":null},{"a":40,"b":51,"type":"taxi","line":null},{"a":41,"b":50,"type":"taxi","line":null},{"a":41,"b":51,"type":"taxi","line":null},{"a":41,"b":33,"type":"taxi","line":null},{"a":41,"b":52,"type":"taxi","line":null},{"a":42,"b":43,"type":"taxi","line":null},{"a":42,"b":53,"type":"taxi","line":null},{"a":42,"b":52,"type":"taxi","line":null},{"a":42,"b":61,"type":"taxi","line":null},{"a":43,"b":44,"type":"taxi","line":null},{"a":43,"b":53,"type":"taxi","line":null},{"a":43,"b":23,"type":"taxi","line":null},{"a":43,"b":62,"type":"taxi","line":null},{"a":44,"b":45,"type":"taxi","line":null},{"a":44,"b":53,"type":"taxi","line":null},{"a":44,"b":63,"type":"taxi","line":null},{"a":44,"b":54,"type":"taxi","line":null},{"a":45,"b":54,"type":"taxi","line":null},{"a":45,"b":46,"type":"taxi","line":null},{"a":45,"b":64,"type":"taxi","line":null},{"a":45,"b":55,"type":"taxi","line":null},{"a":46,"b":55,"type":"taxi","line":null},{"a":46,"b":54,"type":"taxi","line":null},{"a":46,"b":47,"type":"taxi","line":null},{"a":46,"b":64,"type":"taxi","line":null},{"a":47,"b":56,"type":"taxi","line":null},{"a":47,"b":55,"type":"taxi","line":null},{"a":47,"b":27,"type":"taxi","line":null},{"a":47,"b":65,"type":"taxi","line":null},{"a":48,"b":49,"type":"taxi","line":null},{"a":48,"b":57,"type":"taxi","line":null},{"a":48,"b":58,"type":"taxi","line":null},{"a":48,"b":29,"type":"taxi","line":null},{"a":49,"b":58,"type":"taxi","line":null},{"a":49,"b":59,"type":"taxi","line":null},{"a":49,"b":50,"type":"taxi","line":null},{"a":49,"b":57,"type":"taxi","line":null},{"a":50,"b":51,"type":"taxi","line":null},{"a":50,"b":59,"type":"taxi","line":null},{"a":50,"b":60,"type":"taxi","line":null},{"a":50,"b":31,"type":"taxi","line":null},{"a":51,"b":60,"type":"taxi","line":null},{"a":51,"b":52,"type":"taxi","line":null},{"a":51,"b":59,"type":"taxi","line":null},{"a":51,"b":61,"type":"taxi","line":null},{"a":52,"b":61,"type":"taxi","line":null},{"a":52,"b":60,"type":"taxi","line":null},{"a":52,"b":53,"type":"taxi","line":null},{"a":52,"b":70,"type":"taxi","line":null},{"a":53,"b":62,"type":"taxi","line":null},{"a":53,"b":61,"type":"taxi","line":null},{"a":53,"b":63,"type":"taxi","line":null},{"a":53,"b":34,"type":"taxi","line":null},{"a":54,"b":64,"type":"taxi","line":null},{"a":54,"b":55,"type":"taxi","line":null},{"a":54,"b":65,"type":"taxi","line":null},{"a":54,"b":73,"type":"taxi","line":null},{"a":55,"b":65,"type":"taxi","line":null},{"a":55,"b":56,"type":"taxi","line":null},{"a":55,"b":64,"type":"taxi","line":null},{"a":55,"b":66,"type":"taxi","line":null},{"a":56,"b":66,"type":"taxi","line":null},{"a":56,"b":65,"type":"taxi","line":null},{"a":56,"b":46,"type":"taxi","line":null},{"a":56,"b":75,"type":"taxi","line":null},{"a":57,"b":67,"type":"taxi","line":null},{"a":57,"b":58,"type":"taxi","line":null},{"a":57,"b":68,"type":"taxi","line":null},{"a":57,"b":76,"type":"taxi","line":null},{"a":58,"b":59,"type":"taxi","line":null},{"a":58,"b":68,"type":"taxi","line":null},{"a":58,"b":69,"type":"taxi","line":null},{"a":58,"b":77,"type":"taxi","line":null},{"a":59,"b":69,"type":"taxi","line":null},{"a":59,"b":68,"type":"taxi","line":null},{"a":59,"b":40,"type":"taxi","line":null},{"a":59,"b":78,"type":"taxi","line":null},{"a":60,"b":61,"type":"taxi","line":null},{"a":60,"b":70,"type":"taxi","line":null},{"a":60,"b":59,"type":"taxi","line":null},{"a":60,"b":69,"type":"taxi","line":null},{"a":61,"b":70,"type":"taxi","line":null},{"a":61,"b":62,"type":"taxi","line":null},{"a":61,"b":71,"type":"taxi","line":null},{"a":61,"b":80,"type":"taxi","line":null},{"a":62,"b":63,"type":"taxi","line":null},{"a":62,"b":71,"type":"taxi","line":null},{"a":62,"b":70,"type":"taxi","line":null},{"a":62,"b":72,"type":"taxi","line":null},{"a":63,"b":72,"type":"taxi","line":null},{"a":63,"b":73,"type":"taxi","line":null},{"a":63,"b":64,"type":"taxi","line":null},{"a":63,"b":71,"type":"taxi","line":null},{"a":64,"b":73,"type":"taxi","line":null},{"a":64,"b":65,"type":"taxi","line":null},{"a":64,"b":74,"type":"taxi","line":null},{"a":64,"b":83,"type":"taxi","line":null},{"a":65,"b":66,"type":"taxi","line":null},{"a":65,"b":74,"type":"taxi","line":null},{"a":65,"b":75,"type":"taxi","line":null},{"a":65,"b":46,"type":"taxi","line":null},{"a":66,"b":75,"type":"taxi","line":null},{"a":66,"b":85,"type":"taxi","line":null},{"a":66,"b":74,"type":"taxi","line":null},{"a":66,"b":47,"type":"taxi","line":null},{"a":67,"b":76,"type":"taxi","line":null},{"a":67,"b":77,"type":"taxi","line":null},{"a":67,"b":68,"type":"taxi","line":null},{"a":67,"b":58,"type":"taxi","line":null},{"a":68,"b":77,"type":"taxi","line":null},{"a":68,"b":78,"type":"taxi","line":null},{"a":68,"b":69,"type":"taxi","line":null},{"a":68,"b":86,"type":"taxi","line":null},{"a":69,"b":78,"type":"taxi","line":null},{"a":69,"b":77,"type":"taxi","line":null},{"a":69,"b":79,"type":"taxi","line":null},{"a":69,"b":51,"type":"taxi","line":null},{"a":70,"b":71,"type":"taxi","line":null},{"a":70,"b":80,"type":"taxi","line":null},{"a":70,"b":81,"type":"taxi","line":null},{"a":70,"b":79,"type":"taxi","line":null},{"a":71,"b":81,"type":"taxi","line":null},{"a":71,"b":80,"type":"taxi","line":null},{"a":71,"b":72,"type":"taxi","line":null},{"a":71,"b":90,"type":"taxi","line":null},{"a":72,"b":82,"type":"taxi","line":null},{"a":72,"b":83,"type":"taxi","line":null},{"a":72,"b":73,"type":"taxi","line":null},{"a":72,"b":81,"type":"taxi","line":null},{"a":73,"b":83,"type":"taxi","line":null},{"a":73,"b":74,"type":"taxi","line":null},{"a":73,"b":82,"type":"taxi","line":null},{"a":73,"b":65,"type":"taxi","line":null},{"a":74,"b":84,"type":"taxi","line":null},{"a":74,"b":83,"type":"taxi","line":null},{"a":74,"b":75,"type":"taxi","line":null},{"a":74,"b":93,"type":"taxi","line":null},{"a":75,"b":85,"type":"taxi","line":null},{"a":75,"b":94,"type":"taxi","line":null},{"a":75,"b":84,"type":"taxi","line":null},{"a":76,"b":77,"type":"taxi","line":null},{"a":76,"b":86,"type":"taxi","line":null},{"a":76,"b":95,"type":"taxi","line":null},{"a":76,"b":68,"type":"taxi","line":null},{"a":77,"b":86,"type":"taxi","line":null},{"a":77,"b":78,"type":"taxi","line":null},{"a":77,"b":57,"type":"taxi","line":null},{"a":77,"b":59,"type":"taxi","line":null},{"a":78,"b":86,"type":"taxi","line":null},{"a":78,"b":87,"type":"taxi","line":null},{"a":78,"b":79,"type":"taxi","line":null},{"a":78,"b":88,"type":"taxi","line":null},{"a":79,"b":88,"type":"taxi","line":null},{"a":79,"b":80,"type":"taxi","line":null},{"a":79,"b":89,"type":"taxi","line":null},{"a":79,"b":87,"type":"taxi","line":null},{"a":80,"b":81,"type":"taxi","line":null},{"a":80,"b":89,"type":"taxi","line":null},{"a":80,"b":90,"type":"taxi","line":null},{"a":80,"b":88,"type":"taxi","line":null},{"a":81,"b":90,"type":"taxi","line":null},{"a":81,"b":89,"type":"taxi","line":null},{"a":81,"b":82,"type":"taxi","line":null},{"a":81,"b":91,"type":"taxi","line":null},{"a":82,"b":83,"type":"taxi","line":null},{"a":82,"b":91,"type":"taxi","line":null},{"a":82,"b":92,"type":"taxi","line":null},{"a":82,"b":71,"type":"taxi","line":null},{"a":83,"b":92,"type":"taxi","line":null},{"a":83,"b":84,"type":"taxi","line":null},{"a":83,"b":93,"type":"taxi","line":null},{"a":83,"b":91,"type":"taxi","line":null},{"a":84,"b":93,"type":"taxi","line":null},{"a":84,"b":85,"type":"taxi","line":null},{"a":84,"b":102,"type":"taxi","line":null},{"a":84,"b":92,"type":"taxi","line":null},{"a":85,"b":94,"type":"taxi","line":null},{"a":85,"b":103,"type":"taxi","line":null},{"a":85,"b":93,"type":"taxi","line":null},{"a":85,"b":74,"type":"taxi","line":null},{"a":86,"b":96,"type":"taxi","line":null},{"a":86,"b":87,"type":"taxi","line":null},{"a":86,"b":95,"type":"taxi","line":null},{"a":86,"b":97,"type":"taxi","line":null},{"a":87,"b":88,"type":"taxi","line":null},{"a":87,"b":97,"type":"taxi","line":null},{"a":87,"b":98,"type":"taxi","line":null},{"a":87,"b":106,"type":"taxi","line":null},{"a":88,"b":98,"type":"taxi","line":null},{"a":88,"b":97,"type":"taxi","line":null},{"a":88,"b":89,"type":"taxi","line":null},{"a":88,"b":99,"type":"taxi","line":null},{"a":89,"b":99,"type":"taxi","line":null},{"a":89,"b":90,"type":"taxi","line":null},{"a":89,"b":100,"type":"taxi","line":null},{"a":89,"b":98,"type":"taxi","line":null},{"a":90,"b":100,"type":"taxi","line":null},{"a":90,"b":91,"type":"taxi","line":null},{"a":90,"b":99,"type":"taxi","line":null},{"a":90,"b":109,"type":"taxi","line":null},{"a":91,"b":101,"type":"taxi","line":null},{"a":91,"b":92,"type":"taxi","line":null},{"a":91,"b":110,"type":"taxi","line":null},{"a":91,"b":100,"type":"taxi","line":null},{"a":92,"b":93,"type":"taxi","line":null},{"a":92,"b":102,"type":"taxi","line":null},{"a":92,"b":101,"type":"taxi","line":null},{"a":92,"b":111,"type":"taxi","line":null},{"a":93,"b":102,"type":"taxi","line":null},{"a":93,"b":103,"type":"taxi","line":null},{"a":93,"b":94,"type":"taxi","line":null},{"a":93,"b":111,"type":"taxi","line":null},{"a":94,"b":103,"type":"taxi","line":null},{"a":94,"b":84,"type":"taxi","line":null},{"a":94,"b":102,"type":"taxi","line":null},{"a":94,"b":113,"type":"taxi","line":null},{"a":95,"b":104,"type":"taxi","line":null},{"a":95,"b":96,"type":"taxi","line":null},{"a":95,"b":105,"type":"taxi","line":null},{"a":95,"b":114,"type":"taxi","line":null},{"a":96,"b":105,"type":"taxi","line":null},{"a":96,"b":104,"type":"taxi","line":null},{"a":96,"b":106,"type":"taxi","line":null},{"a":96,"b":97,"type":"taxi","line":null},{"a":97,"b":98,"type":"taxi","line":null},{"a":97,"b":106,"type":"taxi","line":null},{"a":97,"b":107,"type":"taxi","line":null},{"a":97,"b":116,"type":"taxi","line":null},{"a":98,"b":107,"type":"taxi","line":null},{"a":98,"b":106,"type":"taxi","line":null},{"a":98,"b":99,"type":"taxi","line":null},{"a":98,"b":117,"type":"taxi","line":null},{"a":99,"b":100,"type":"taxi","line":null},{"a":99,"b":108,"type":"taxi","line":null},{"a":99,"b":107,"type":"taxi","line":null},{"a":99,"b":109,"type":"taxi","line":null},{"a":100,"b":109,"type":"taxi","line":null},{"a":100,"b":108,"type":"taxi","line":null},{"a":100,"b":81,"type":"taxi","line":null},{"a":100,"b":101,"type":"taxi","line":null},{"a":101,"b":110,"type":"taxi","line":null},{"a":101,"b":111,"type":"taxi","line":null},{"a":101,"b":119,"type":"taxi","line":null},{"a":101,"b":109,"type":"taxi","line":null},{"a":102,"b":112,"type":"taxi","line":null},{"a":102,"b":103,"type":"taxi","line":null},{"a":102,"b":111,"type":"taxi","line":null},{"a":102,"b":113,"type":"taxi","line":null},{"a":103,"b":113,"type":"taxi","line":null},{"a":103,"b":112,"type":"taxi","line":null},{"a":103,"b":84,"type":"taxi","line":null},{"a":103,"b":122,"type":"taxi","line":null},{"a":104,"b":114,"type":"taxi","line":null},{"a":104,"b":105,"type":"taxi","line":null},{"a":104,"b":115,"type":"taxi","line":null},{"a":105,"b":115,"type":"taxi","line":null},{"a":105,"b":114,"type":"taxi","line":null},{"a":105,"b":106,"type":"taxi","line":null},{"a":105,"b":116,"type":"taxi","line":null},{"a":106,"b":116,"type":"taxi","line":null},{"a":106,"b":107,"type":"taxi","line":null},{"a":106,"b":115,"type":"taxi","line":null},{"a":106,"b":117,"type":"taxi","line":null},{"a":107,"b":117,"type":"taxi","line":null},{"a":107,"b":108,"type":"taxi","line":null},{"a":107,"b":116,"type":"taxi","line":null},{"a":107,"b":88,"type":"taxi","line":null},{"a":108,"b":117,"type":"taxi","line":null},{"a":108,"b":109,"type":"taxi","line":null},{"a":108,"b":118,"type":"taxi","line":null},{"a":108,"b":98,"type":"taxi","line":null},{"a":109,"b":118,"type":"taxi","line":null},{"a":109,"b":119,"type":"taxi","line":null},{"a":109,"b":110,"type":"taxi","line":null},{"a":109,"b":91,"type":"taxi","line":null},{"a":110,"b":111,"type":"taxi","line":null},{"a":110,"b":119,"type":"taxi","line":null},{"a":110,"b":120,"type":"taxi","line":null},{"a":110,"b":92,"type":"taxi","line":null},{"a":111,"b":120,"type":"taxi","line":null},{"a":111,"b":119,"type":"taxi","line":null},{"a":111,"b":112,"type":"taxi","line":null},{"a":111,"b":91,"type":"taxi","line":null},{"a":112,"b":121,"type":"taxi","line":null},{"a":112,"b":113,"type":"taxi","line":null},{"a":112,"b":120,"type":"taxi","line":null},{"a":112,"b":122,"type":"taxi","line":null},{"a":113,"b":122,"type":"taxi","line":null},{"a":113,"b":121,"type":"taxi","line":null},{"a":114,"b":115,"type":"taxi","line":null},{"a":114,"b":96,"type":"taxi","line":null},{"a":114,"b":116,"type":"taxi","line":null},{"a":115,"b":116,"type":"taxi","line":null},{"a":115,"b":96,"type":"taxi","line":null},{"a":116,"b":117,"type":"taxi","line":null},{"a":116,"b":98,"type":"taxi","line":null},{"a":116,"b":96,"type":"taxi","line":null},{"a":117,"b":99,"type":"taxi","line":null},{"a":117,"b":97,"type":"taxi","line":null},{"a":117,"b":118,"type":"taxi","line":null},{"a":117,"b":109,"type":"taxi","line":null},{"a":118,"b":119,"type":"taxi","line":null},{"a":118,"b":110,"type":"taxi","line":null},{"a":118,"b":100,"type":"taxi","line":null},{"a":119,"b":120,"type":"taxi","line":null},{"a":120,"b":121,"type":"taxi","line":null},{"a":120,"b":101,"type":"taxi","line":null},{"a":121,"b":122,"type":"taxi","line":null},{"a":121,"b":111,"type":"taxi","line":null},{"a":121,"b":102,"type":"taxi","line":null},{"a":121,"b":103,"type":"taxi","line":null},{"a":101,"b":81,"type":"bus","line":"C1"},{"a":81,"b":52,"type":"bus","line":"C1"},{"a":52,"b":40,"type":"bus","line":"C1"},{"a":40,"b":38,"type":"bus","line":"C1"},{"a":38,"b":10,"type":"bus","line":"C1"},{"a":10,"b":39,"type":"bus","line":"C1"},{"a":39,"b":41,"type":"bus","line":"C1"},{"a":41,"b":34,"type":"bus","line":"C1"},{"a":34,"b":45,"type":"bus","line":"C1"},{"a":98,"b":80,"type":"bus","line":"C2"},{"a":80,"b":63,"type":"bus","line":"C2"},{"a":63,"b":74,"type":"bus","line":"C2"},{"a":74,"b":103,"type":"bus","line":"C2"},{"a":103,"b":121,"type":"bus","line":"C2"},{"a":121,"b":119,"type":"bus","line":"C2"},{"a":119,"b":91,"type":"bus","line":"C2"},{"a":91,"b":89,"type":"bus","line":"C2"},{"a":89,"b":117,"type":"bus","line":"C2"},{"a":69,"b":52,"type":"bus","line":"C3"},{"a":52,"b":34,"type":"bus","line":"C3"},{"a":34,"b":16,"type":"bus","line":"C3"},{"a":16,"b":8,"type":"bus","line":"C3"},{"a":8,"b":25,"type":"bus","line":"C3"},{"a":25,"b":23,"type":"bus","line":"C3"},{"a":23,"b":41,"type":"bus","line":"C3"},{"a":41,"b":30,"type":"bus","line":"C3"},{"a":30,"b":1,"type":"bus","line":"C3"},{"a":38,"b":58,"type":"bus","line":"C4"},{"a":58,"b":86,"type":"bus","line":"C4"},{"a":86,"b":98,"type":"bus","line":"C4"},{"a":98,"b":90,"type":"bus","line":"C4"},{"a":90,"b":83,"type":"bus","line":"C4"},{"a":83,"b":65,"type":"bus","line":"C4"},{"a":65,"b":45,"type":"bus","line":"C4"},{"a":45,"b":47,"type":"bus","line":"C5"},{"a":47,"b":19,"type":"bus","line":"C5"},{"a":19,"b":26,"type":"bus","line":"C5"},{"a":26,"b":44,"type":"bus","line":"C5"},{"a":44,"b":52,"type":"bus","line":"C5"},{"a":69,"b":67,"type":"bus","line":"C5"},{"a":67,"b":38,"type":"bus","line":"C5"},{"a":80,"b":87,"type":"bus","line":"C6"},{"a":87,"b":105,"type":"bus","line":"C6"},{"a":105,"b":98,"type":"bus","line":"C6"},{"a":63,"b":52,"type":"bus","line":"C7"},{"a":46,"b":28,"type":"bus","line":"C8"},{"a":28,"b":56,"type":"bus","line":"C8"},{"a":56,"b":64,"type":"bus","line":"C8"},{"a":64,"b":82,"type":"bus","line":"C8"},{"a":82,"b":110,"type":"bus","line":"C8"},{"a":110,"b":121,"type":"bus","line":"C8"},{"a":91,"b":80,"type":"bus","line":"C8"},{"a":25,"b":47,"type":"tram","line":"T1"},{"a":47,"b":84,"type":"tram","line":"T1"},{"a":84,"b":120,"type":"tram","line":"T1"},{"a":120,"b":108,"type":"tram","line":"T1"},{"a":108,"b":115,"type":"tram","line":"T1"},{"a":115,"b":76,"type":"tram","line":"T1"},{"a":76,"b":39,"type":"tram","line":"T1"},{"a":39,"b":2,"type":"tram","line":"T1"},{"a":2,"b":14,"type":"tram","line":"T1"},{"a":101,"b":63,"type":"tram","line":"T2"},{"a":63,"b":33,"type":"tram","line":"T2"},{"a":33,"b":3,"type":"tram","line":"T2"},{"a":3,"b":39,"type":"tram","line":"T2"},{"a":76,"b":114,"type":"tram","line":"T2"},{"a":114,"b":107,"type":"tram","line":"T2"},{"a":107,"b":91,"type":"tram","line":"T2"},{"a":91,"b":121,"type":"tram","line":"T2"},{"a":91,"b":61,"type":"tram","line":"T3"},{"a":61,"b":31,"type":"tram","line":"T3"},{"a":31,"b":1,"type":"tram","line":"T3"},{"a":1,"b":39,"type":"tram","line":"T3"},{"a":39,"b":78,"type":"tram","line":"T3"},{"a":78,"b":116,"type":"tram","line":"T3"},{"a":116,"b":109,"type":"tram","line":"T3"},{"a":109,"b":102,"type":"tram","line":"T3"},{"a":95,"b":69,"type":"tram","line":"T4"},{"a":69,"b":53,"type":"tram","line":"T4"},{"a":53,"b":46,"type":"tram","line":"T4"},{"a":46,"b":8,"type":"tram","line":"T4"},{"a":8,"b":35,"type":"tram","line":"T4"},{"a":35,"b":61,"type":"tram","line":"T4"},{"a":61,"b":87,"type":"tram","line":"T4"},{"a":87,"b":114,"type":"tram","line":"T4"},{"a":56,"b":18,"type":"tram","line":"T5"},{"a":18,"b":34,"type":"tram","line":"T5"},{"a":34,"b":31,"type":"tram","line":"T5"},{"a":31,"b":57,"type":"tram","line":"T5"},{"a":57,"b":95,"type":"tram","line":"T5"},{"a":95,"b":107,"type":"tram","line":"T5"},{"a":107,"b":110,"type":"tram","line":"T5"},{"a":110,"b":113,"type":"tram","line":"T5"},{"a":113,"b":83,"type":"tram","line":"T5"},{"a":57,"b":20,"type":"tram","line":"T6"},{"a":20,"b":3,"type":"tram","line":"T6"},{"a":33,"b":45,"type":"tram","line":"T6"},{"a":45,"b":84,"type":"tram","line":"T6"},{"a":28,"b":53,"type":"metro","line":"A"},{"a":53,"b":109,"type":"metro","line":"A"},{"a":109,"b":115,"type":"metro","line":"A"},{"a":115,"b":69,"type":"metro","line":"A"},{"a":69,"b":13,"type":"metro","line":"A"},{"a":13,"b":7,"type":"metro","line":"A"},{"a":7,"b":56,"type":"metro","line":"A"},{"a":56,"b":103,"type":"metro","line":"A"},{"a":42,"b":87,"type":"metro","line":"B"},{"a":87,"b":63,"type":"metro","line":"B"},{"a":63,"b":28,"type":"metro","line":"B"},{"a":33,"b":8,"type":"metro","line":"C"},{"a":8,"b":65,"type":"metro","line":"C"},{"a":65,"b":109,"type":"metro","line":"C"},{"a":15,"b":72,"type":"metro","line":"D"},{"a":72,"b":118,"type":"metro","line":"D"},{"a":118,"b":115,"type":"metro","line":"D"},{"a":22,"b":31,"type":"boat","line":"Vaporetto Saône"},{"a":3,"b":22,"type":"boat","line":"Vaporetto Saône"},{"a":22,"b":40,"type":"boat","line":"Vaporetto Saône"},{"a":59,"b":88,"type":"boat","line":"Vaporetto Saône"},{"a":88,"b":106,"type":"boat","line":"Vaporetto Saône"},{"a":44,"b":62,"type":"boat","line":"Vaporetto Rhône"},{"a":100,"b":119,"type":"boat","line":"Vaporetto Rhône"},{"a":15,"b":34,"type":"boat","line":"Vaporetto Rhône"},{"a":53,"b":71,"type":"boat","line":"Vaporetto Rhône"},{"a":71,"b":91,"type":"boat","line":"Vaporetto Rhône"},{"a":91,"b":118,"type":"boat","line":"Vaporetto Rhône"}],"rivers":[{"name":"Saône","pts":[[313,17],[325,110],[329,203],[324,295],[311,388],[296,481],[283,574],[277,667],[280,759],[291,852],[306,945]]},{"name":"Rhône","pts":[[550,17],[542,110],[527,203],[509,295],[495,388],[490,481],[495,574],[509,667],[526,759],[542,852],[550,945]]}],"startCards":[1,29,5,57,23,33,51,95,43,35,79,88,115,98,54,55,108,109,110,85]};
+const BOARD = {"width":1240,"height":1180,"nodes":[{"id":1,"x":215,"y":110,"name":"Gare de Vaise","metro":true},{"id":2,"x":245,"y":200,"name":"Valmy","metro":true},{"id":3,"x":225,"y":330,"name":"Gorge de Loup","metro":true},{"id":4,"x":300,"y":470,"name":"Vieux Lyon","metro":true},{"id":5,"x":560,"y":45,"name":"Cuire","metro":true},{"id":6,"x":528,"y":110,"name":"Hénon","metro":true},{"id":7,"x":498,"y":185,"name":"Croix-Rousse","metro":true},{"id":8,"x":512,"y":265,"name":"Croix-Paquet","metro":true},{"id":9,"x":525,"y":330,"name":"Hôtel de Ville","metro":true},{"id":10,"x":540,"y":420,"name":"Cordeliers","metro":true},{"id":11,"x":530,"y":560,"name":"Bellecour","metro":true},{"id":12,"x":525,"y":650,"name":"Ampère-Victor Hugo","metro":true},{"id":13,"x":515,"y":740,"name":"Perrache","metro":true},{"id":14,"x":640,"y":320,"name":"Foch","metro":true},{"id":15,"x":735,"y":328,"name":"Masséna","metro":true},{"id":16,"x":815,"y":338,"name":"Charpennes","metro":true},{"id":17,"x":895,"y":330,"name":"République","metro":true},{"id":18,"x":965,"y":318,"name":"Gratte-Ciel","metro":true},{"id":19,"x":1035,"y":300,"name":"Flachet","metro":true},{"id":20,"x":1100,"y":285,"name":"Cusset","metro":true},{"id":21,"x":1155,"y":255,"name":"L. Bonnevay","metro":true},{"id":22,"x":1185,"y":215,"name":"Vaulx La Soie","metro":true},{"id":23,"x":800,"y":420,"name":"Brotteaux","metro":true},{"id":24,"x":760,"y":510,"name":"Part-Dieu","metro":true},{"id":25,"x":730,"y":580,"name":"Place Guichard","metro":true},{"id":26,"x":710,"y":650,"name":"Saxe-Gambetta","metro":true},{"id":27,"x":690,"y":730,"name":"Jean Jaurès","metro":true},{"id":28,"x":660,"y":805,"name":"Debourg","metro":true},{"id":29,"x":625,"y":875,"name":"Stade de Gerland","metro":true},{"id":30,"x":520,"y":905,"name":"Gare d'Oullins","metro":true},{"id":31,"x":650,"y":560,"name":"Guillotière","metro":true},{"id":32,"x":760,"y":660,"name":"Garibaldi","metro":true},{"id":33,"x":830,"y":670,"name":"Sans Souci","metro":true},{"id":34,"x":900,"y":680,"name":"Monplaisir-Lumière","metro":true},{"id":35,"x":975,"y":650,"name":"Grange Blanche","metro":true},{"id":36,"x":1035,"y":705,"name":"Laënnec","metro":true},{"id":37,"x":1065,"y":780,"name":"Mermoz-Pinel","metro":true},{"id":38,"x":1070,"y":860,"name":"Parilly","metro":true},{"id":39,"x":960,"y":935,"name":"Gare de Vénissieux","metro":true},{"id":40,"x":495,"y":855,"name":"Confluence","metro":false},{"id":41,"x":660,"y":715,"name":"Jean Macé","metro":false},{"id":42,"x":870,"y":250,"name":"Parc Tête d'Or","metro":false},{"id":43,"x":1130,"y":560,"name":"Bron","metro":false},{"id":44,"x":900,"y":165,"name":"IUT Feyssine","metro":false},{"id":45,"x":69,"y":93},{"id":46,"x":69,"y":174},{"id":47,"x":61,"y":243},{"id":48,"x":84,"y":368},{"id":49,"x":72,"y":460},{"id":50,"x":81,"y":544},{"id":51,"x":77,"y":641},{"id":52,"x":83,"y":798},{"id":53,"x":66,"y":883},{"id":54,"x":68,"y":999},{"id":55,"x":93,"y":1072},{"id":56,"x":146,"y":60},{"id":57,"x":149,"y":185},{"id":58,"x":156,"y":276},{"id":59,"x":150,"y":364},{"id":60,"x":181,"y":422},{"id":61,"x":181,"y":534},{"id":62,"x":185,"y":644},{"id":63,"x":169,"y":723},{"id":64,"x":145,"y":784},{"id":65,"x":167,"y":910},{"id":66,"x":165,"y":1009},{"id":67,"x":262,"y":60},{"id":68,"x":259,"y":515},{"id":69,"x":271,"y":710},{"id":70,"x":247,"y":804},{"id":71,"x":268,"y":895},{"id":72,"x":238,"y":976},{"id":73,"x":275,"y":1086},{"id":74,"x":326,"y":800},{"id":75,"x":353,"y":876},{"id":76,"x":324,"y":975},{"id":77,"x":338,"y":1065},{"id":78,"x":459,"y":70},{"id":79,"x":416,"y":161},{"id":80,"x":423,"y":345},{"id":81,"x":431,"y":426},{"id":82,"x":438,"y":523},{"id":83,"x":455,"y":622},{"id":84,"x":417,"y":810},{"id":85,"x":456,"y":904},{"id":86,"x":447,"y":997},{"id":87,"x":435,"y":1101},{"id":88,"x":532,"y":1010},{"id":89,"x":553,"y":1081},{"id":90,"x":621,"y":56},{"id":91,"x":640,"y":163},{"id":92,"x":607,"y":250},{"id":93,"x":601,"y":427},{"id":94,"x":604,"y":516},{"id":95,"x":605,"y":644},{"id":96,"x":643,"y":1010},{"id":97,"x":631,"y":1089},{"id":98,"x":723,"y":72},{"id":99,"x":710,"y":157},{"id":100,"x":722,"y":794},{"id":101,"x":714,"y":903},{"id":102,"x":728,"y":1011},{"id":103,"x":719,"y":1077},{"id":104,"x":786,"y":64},{"id":105,"x":820,"y":809},{"id":106,"x":818,"y":892},{"id":107,"x":827,"y":988},{"id":108,"x":806,"y":1095},{"id":109,"x":903,"y":51},{"id":110,"x":916,"y":431},{"id":111,"x":886,"y":531},{"id":112,"x":905,"y":795},{"id":113,"x":905,"y":896},{"id":114,"x":885,"y":1083},{"id":115,"x":1005,"y":81},{"id":116,"x":991,"y":165},{"id":117,"x":967,"y":238},{"id":118,"x":996,"y":426},{"id":119,"x":977,"y":520},{"id":120,"x":976,"y":811},{"id":121,"x":981,"y":1008},{"id":122,"x":998,"y":1077},{"id":123,"x":1075,"y":49},{"id":124,"x":1095,"y":151},{"id":125,"x":1066,"y":426},{"id":126,"x":1090,"y":508},{"id":127,"x":1072,"y":626},{"id":128,"x":1096,"y":1003},{"id":129,"x":1102,"y":1066},{"id":130,"x":1192,"y":84},{"id":131,"x":1155,"y":141},{"id":132,"x":1164,"y":349},{"id":133,"x":1183,"y":461},{"id":134,"x":1196,"y":622},{"id":135,"x":1186,"y":724},{"id":136,"x":1151,"y":787},{"id":137,"x":1167,"y":895},{"id":138,"x":1159,"y":1000},{"id":139,"x":1172,"y":1098}],"edges":[{"a":1,"b":67,"type":"taxi","line":null},{"a":1,"b":56,"type":"taxi","line":null},{"a":1,"b":2,"type":"taxi","line":null},{"a":1,"b":57,"type":"taxi","line":null},{"a":2,"b":57,"type":"taxi","line":null},{"a":2,"b":58,"type":"taxi","line":null},{"a":2,"b":3,"type":"taxi","line":null},{"a":3,"b":59,"type":"taxi","line":null},{"a":3,"b":58,"type":"taxi","line":null},{"a":3,"b":60,"type":"taxi","line":null},{"a":4,"b":68,"type":"taxi","line":null},{"a":4,"b":60,"type":"taxi","line":null},{"a":4,"b":61,"type":"taxi","line":null},{"a":4,"b":81,"type":"taxi","line":null},{"a":5,"b":90,"type":"taxi","line":null},{"a":5,"b":6,"type":"taxi","line":null},{"a":5,"b":78,"type":"taxi","line":null},{"a":5,"b":91,"type":"taxi","line":null},{"a":6,"b":78,"type":"taxi","line":null},{"a":6,"b":7,"type":"taxi","line":null},{"a":6,"b":90,"type":"taxi","line":null},{"a":7,"b":8,"type":"taxi","line":null},{"a":7,"b":79,"type":"taxi","line":null},{"a":7,"b":78,"type":"taxi","line":null},{"a":8,"b":9,"type":"taxi","line":null},{"a":8,"b":92,"type":"taxi","line":null},{"a":8,"b":80,"type":"taxi","line":null},{"a":9,"b":10,"type":"taxi","line":null},{"a":9,"b":80,"type":"taxi","line":null},{"a":9,"b":92,"type":"taxi","line":null},{"a":10,"b":93,"type":"taxi","line":null},{"a":10,"b":81,"type":"taxi","line":null},{"a":10,"b":94,"type":"taxi","line":null},{"a":11,"b":94,"type":"taxi","line":null},{"a":11,"b":12,"type":"taxi","line":null},{"a":11,"b":83,"type":"taxi","line":null},{"a":11,"b":82,"type":"taxi","line":null},{"a":12,"b":83,"type":"taxi","line":null},{"a":12,"b":95,"type":"taxi","line":null},{"a":12,"b":13,"type":"taxi","line":null},{"a":13,"b":40,"type":"taxi","line":null},{"a":13,"b":84,"type":"taxi","line":null},{"a":13,"b":95,"type":"taxi","line":null},{"a":14,"b":92,"type":"taxi","line":null},{"a":14,"b":15,"type":"taxi","line":null},{"a":14,"b":93,"type":"taxi","line":null},{"a":14,"b":9,"type":"taxi","line":null},{"a":15,"b":16,"type":"taxi","line":null},{"a":15,"b":23,"type":"taxi","line":null},{"a":15,"b":92,"type":"taxi","line":null},{"a":16,"b":17,"type":"taxi","line":null},{"a":16,"b":23,"type":"taxi","line":null},{"a":16,"b":42,"type":"taxi","line":null},{"a":17,"b":18,"type":"taxi","line":null},{"a":17,"b":42,"type":"taxi","line":null},{"a":17,"b":110,"type":"taxi","line":null},{"a":18,"b":19,"type":"taxi","line":null},{"a":18,"b":117,"type":"taxi","line":null},{"a":18,"b":118,"type":"taxi","line":null},{"a":19,"b":20,"type":"taxi","line":null},{"a":19,"b":117,"type":"taxi","line":null},{"a":19,"b":21,"type":"taxi","line":null},{"a":20,"b":21,"type":"taxi","line":null},{"a":20,"b":132,"type":"taxi","line":null},{"a":20,"b":22,"type":"taxi","line":null},{"a":21,"b":22,"type":"taxi","line":null},{"a":21,"b":132,"type":"taxi","line":null},{"a":21,"b":131,"type":"taxi","line":null},{"a":22,"b":131,"type":"taxi","line":null},{"a":22,"b":124,"type":"taxi","line":null},{"a":23,"b":24,"type":"taxi","line":null},{"a":23,"b":110,"type":"taxi","line":null},{"a":24,"b":25,"type":"taxi","line":null},{"a":24,"b":31,"type":"taxi","line":null},{"a":24,"b":111,"type":"taxi","line":null},{"a":25,"b":26,"type":"taxi","line":null},{"a":25,"b":31,"type":"taxi","line":null},{"a":25,"b":32,"type":"taxi","line":null},{"a":26,"b":32,"type":"taxi","line":null},{"a":26,"b":41,"type":"taxi","line":null},{"a":26,"b":27,"type":"taxi","line":null},{"a":27,"b":41,"type":"taxi","line":null},{"a":27,"b":100,"type":"taxi","line":null},{"a":27,"b":28,"type":"taxi","line":null},{"a":28,"b":100,"type":"taxi","line":null},{"a":28,"b":29,"type":"taxi","line":null},{"a":28,"b":41,"type":"taxi","line":null},{"a":29,"b":101,"type":"taxi","line":null},{"a":29,"b":30,"type":"taxi","line":null},{"a":29,"b":100,"type":"taxi","line":null},{"a":30,"b":40,"type":"taxi","line":null},{"a":30,"b":85,"type":"taxi","line":null},{"a":30,"b":88,"type":"taxi","line":null},{"a":31,"b":94,"type":"taxi","line":null},{"a":31,"b":95,"type":"taxi","line":null},{"a":31,"b":26,"type":"taxi","line":null},{"a":32,"b":33,"type":"taxi","line":null},{"a":32,"b":27,"type":"taxi","line":null},{"a":33,"b":34,"type":"taxi","line":null},{"a":33,"b":26,"type":"taxi","line":null},{"a":33,"b":25,"type":"taxi","line":null},{"a":34,"b":35,"type":"taxi","line":null},{"a":34,"b":112,"type":"taxi","line":null},{"a":34,"b":36,"type":"taxi","line":null},{"a":35,"b":36,"type":"taxi","line":null},{"a":35,"b":127,"type":"taxi","line":null},{"a":35,"b":119,"type":"taxi","line":null},{"a":36,"b":37,"type":"taxi","line":null},{"a":36,"b":127,"type":"taxi","line":null},{"a":36,"b":120,"type":"taxi","line":null},{"a":37,"b":38,"type":"taxi","line":null},{"a":37,"b":136,"type":"taxi","line":null},{"a":37,"b":120,"type":"taxi","line":null},{"a":38,"b":137,"type":"taxi","line":null},{"a":38,"b":120,"type":"taxi","line":null},{"a":38,"b":136,"type":"taxi","line":null},{"a":39,"b":113,"type":"taxi","line":null},{"a":39,"b":121,"type":"taxi","line":null},{"a":39,"b":120,"type":"taxi","line":null},{"a":39,"b":38,"type":"taxi","line":null},{"a":40,"b":85,"type":"taxi","line":null},{"a":40,"b":84,"type":"taxi","line":null},{"a":41,"b":95,"type":"taxi","line":null},{"a":42,"b":44,"type":"taxi","line":null},{"a":42,"b":117,"type":"taxi","line":null},{"a":43,"b":126,"type":"taxi","line":null},{"a":43,"b":127,"type":"taxi","line":null},{"a":43,"b":134,"type":"taxi","line":null},{"a":43,"b":133,"type":"taxi","line":null},{"a":44,"b":116,"type":"taxi","line":null},{"a":44,"b":117,"type":"taxi","line":null},{"a":44,"b":109,"type":"taxi","line":null},{"a":45,"b":46,"type":"taxi","line":null},{"a":45,"b":56,"type":"taxi","line":null},{"a":45,"b":57,"type":"taxi","line":null},{"a":45,"b":1,"type":"taxi","line":null},{"a":46,"b":47,"type":"taxi","line":null},{"a":46,"b":57,"type":"taxi","line":null},{"a":46,"b":58,"type":"taxi","line":null},{"a":47,"b":58,"type":"taxi","line":null},{"a":47,"b":57,"type":"taxi","line":null},{"a":47,"b":48,"type":"taxi","line":null},{"a":48,"b":59,"type":"taxi","line":null},{"a":48,"b":49,"type":"taxi","line":null},{"a":48,"b":60,"type":"taxi","line":null},{"a":48,"b":58,"type":"taxi","line":null},{"a":49,"b":50,"type":"taxi","line":null},{"a":49,"b":60,"type":"taxi","line":null},{"a":49,"b":59,"type":"taxi","line":null},{"a":50,"b":51,"type":"taxi","line":null},{"a":50,"b":61,"type":"taxi","line":null},{"a":50,"b":62,"type":"taxi","line":null},{"a":51,"b":62,"type":"taxi","line":null},{"a":51,"b":63,"type":"taxi","line":null},{"a":51,"b":61,"type":"taxi","line":null},{"a":52,"b":64,"type":"taxi","line":null},{"a":52,"b":53,"type":"taxi","line":null},{"a":52,"b":63,"type":"taxi","line":null},{"a":52,"b":65,"type":"taxi","line":null},{"a":53,"b":65,"type":"taxi","line":null},{"a":53,"b":54,"type":"taxi","line":null},{"a":53,"b":64,"type":"taxi","line":null},{"a":54,"b":55,"type":"taxi","line":null},{"a":54,"b":66,"type":"taxi","line":null},{"a":54,"b":65,"type":"taxi","line":null},{"a":55,"b":66,"type":"taxi","line":null},{"a":55,"b":72,"type":"taxi","line":null},{"a":55,"b":65,"type":"taxi","line":null},{"a":56,"b":67,"type":"taxi","line":null},{"a":56,"b":57,"type":"taxi","line":null},{"a":57,"b":58,"type":"taxi","line":null},{"a":58,"b":59,"type":"taxi","line":null},{"a":59,"b":60,"type":"taxi","line":null},{"a":60,"b":61,"type":"taxi","line":null},{"a":61,"b":68,"type":"taxi","line":null},{"a":61,"b":62,"type":"taxi","line":null},{"a":62,"b":63,"type":"taxi","line":null},{"a":62,"b":69,"type":"taxi","line":null},{"a":63,"b":64,"type":"taxi","line":null},{"a":63,"b":69,"type":"taxi","line":null},{"a":63,"b":70,"type":"taxi","line":null},{"a":64,"b":70,"type":"taxi","line":null},{"a":65,"b":72,"type":"taxi","line":null},{"a":65,"b":66,"type":"taxi","line":null},{"a":65,"b":71,"type":"taxi","line":null},{"a":66,"b":72,"type":"taxi","line":null},{"a":67,"b":2,"type":"taxi","line":null},{"a":67,"b":57,"type":"taxi","line":null},{"a":68,"b":60,"type":"taxi","line":null},{"a":68,"b":62,"type":"taxi","line":null},{"a":69,"b":70,"type":"taxi","line":null},{"a":69,"b":74,"type":"taxi","line":null},{"a":70,"b":74,"type":"taxi","line":null},{"a":70,"b":71,"type":"taxi","line":null},{"a":71,"b":72,"type":"taxi","line":null},{"a":71,"b":75,"type":"taxi","line":null},{"a":71,"b":76,"type":"taxi","line":null},{"a":72,"b":76,"type":"taxi","line":null},{"a":73,"b":77,"type":"taxi","line":null},{"a":73,"b":72,"type":"taxi","line":null},{"a":73,"b":76,"type":"taxi","line":null},{"a":73,"b":66,"type":"taxi","line":null},{"a":74,"b":75,"type":"taxi","line":null},{"a":74,"b":84,"type":"taxi","line":null},{"a":75,"b":84,"type":"taxi","line":null},{"a":75,"b":76,"type":"taxi","line":null},{"a":76,"b":77,"type":"taxi","line":null},{"a":77,"b":87,"type":"taxi","line":null},{"a":77,"b":86,"type":"taxi","line":null},{"a":78,"b":79,"type":"taxi","line":null},{"a":79,"b":6,"type":"taxi","line":null},{"a":79,"b":8,"type":"taxi","line":null},{"a":80,"b":81,"type":"taxi","line":null},{"a":80,"b":10,"type":"taxi","line":null},{"a":81,"b":82,"type":"taxi","line":null},{"a":81,"b":9,"type":"taxi","line":null},{"a":82,"b":83,"type":"taxi","line":null},{"a":82,"b":10,"type":"taxi","line":null},{"a":83,"b":13,"type":"taxi","line":null},{"a":84,"b":85,"type":"taxi","line":null},{"a":85,"b":86,"type":"taxi","line":null},{"a":86,"b":88,"type":"taxi","line":null},{"a":86,"b":87,"type":"taxi","line":null},{"a":86,"b":30,"type":"taxi","line":null},{"a":87,"b":89,"type":"taxi","line":null},{"a":87,"b":88,"type":"taxi","line":null},{"a":88,"b":89,"type":"taxi","line":null},{"a":88,"b":96,"type":"taxi","line":null},{"a":89,"b":97,"type":"taxi","line":null},{"a":89,"b":96,"type":"taxi","line":null},{"a":90,"b":98,"type":"taxi","line":null},{"a":90,"b":91,"type":"taxi","line":null},{"a":91,"b":99,"type":"taxi","line":null},{"a":91,"b":92,"type":"taxi","line":null},{"a":91,"b":98,"type":"taxi","line":null},{"a":93,"b":94,"type":"taxi","line":null},{"a":93,"b":9,"type":"taxi","line":null},{"a":95,"b":26,"type":"taxi","line":null},{"a":96,"b":97,"type":"taxi","line":null},{"a":96,"b":102,"type":"taxi","line":null},{"a":96,"b":103,"type":"taxi","line":null},{"a":97,"b":103,"type":"taxi","line":null},{"a":97,"b":102,"type":"taxi","line":null},{"a":98,"b":104,"type":"taxi","line":null},{"a":98,"b":99,"type":"taxi","line":null},{"a":99,"b":104,"type":"taxi","line":null},{"a":99,"b":90,"type":"taxi","line":null},{"a":100,"b":105,"type":"taxi","line":null},{"a":100,"b":41,"type":"taxi","line":null},{"a":101,"b":106,"type":"taxi","line":null},{"a":101,"b":102,"type":"taxi","line":null},{"a":101,"b":100,"type":"taxi","line":null},{"a":102,"b":103,"type":"taxi","line":null},{"a":102,"b":107,"type":"taxi","line":null},{"a":103,"b":108,"type":"taxi","line":null},{"a":104,"b":109,"type":"taxi","line":null},{"a":104,"b":44,"type":"taxi","line":null},{"a":105,"b":106,"type":"taxi","line":null},{"a":105,"b":112,"type":"taxi","line":null},{"a":105,"b":113,"type":"taxi","line":null},{"a":106,"b":113,"type":"taxi","line":null},{"a":106,"b":107,"type":"taxi","line":null},{"a":107,"b":108,"type":"taxi","line":null},{"a":107,"b":114,"type":"taxi","line":null},{"a":108,"b":114,"type":"taxi","line":null},{"a":108,"b":102,"type":"taxi","line":null},{"a":109,"b":115,"type":"taxi","line":null},{"a":109,"b":116,"type":"taxi","line":null},{"a":110,"b":118,"type":"taxi","line":null},{"a":110,"b":111,"type":"taxi","line":null},{"a":110,"b":119,"type":"taxi","line":null},{"a":111,"b":119,"type":"taxi","line":null},{"a":111,"b":23,"type":"taxi","line":null},{"a":112,"b":120,"type":"taxi","line":null},{"a":112,"b":113,"type":"taxi","line":null},{"a":113,"b":120,"type":"taxi","line":null},{"a":114,"b":122,"type":"taxi","line":null},{"a":114,"b":121,"type":"taxi","line":null},{"a":115,"b":123,"type":"taxi","line":null},{"a":115,"b":116,"type":"taxi","line":null},{"a":115,"b":124,"type":"taxi","line":null},{"a":116,"b":117,"type":"taxi","line":null},{"a":116,"b":124,"type":"taxi","line":null},{"a":118,"b":125,"type":"taxi","line":null},{"a":118,"b":119,"type":"taxi","line":null},{"a":119,"b":126,"type":"taxi","line":null},{"a":121,"b":122,"type":"taxi","line":null},{"a":121,"b":128,"type":"taxi","line":null},{"a":122,"b":129,"type":"taxi","line":null},{"a":122,"b":128,"type":"taxi","line":null},{"a":123,"b":124,"type":"taxi","line":null},{"a":123,"b":131,"type":"taxi","line":null},{"a":123,"b":130,"type":"taxi","line":null},{"a":124,"b":131,"type":"taxi","line":null},{"a":125,"b":126,"type":"taxi","line":null},{"a":125,"b":133,"type":"taxi","line":null},{"a":125,"b":132,"type":"taxi","line":null},{"a":126,"b":133,"type":"taxi","line":null},{"a":127,"b":126,"type":"taxi","line":null},{"a":128,"b":138,"type":"taxi","line":null},{"a":128,"b":129,"type":"taxi","line":null},{"a":128,"b":139,"type":"taxi","line":null},{"a":129,"b":139,"type":"taxi","line":null},{"a":129,"b":138,"type":"taxi","line":null},{"a":130,"b":131,"type":"taxi","line":null},{"a":130,"b":124,"type":"taxi","line":null},{"a":130,"b":22,"type":"taxi","line":null},{"a":132,"b":133,"type":"taxi","line":null},{"a":134,"b":135,"type":"taxi","line":null},{"a":134,"b":127,"type":"taxi","line":null},{"a":134,"b":126,"type":"taxi","line":null},{"a":135,"b":136,"type":"taxi","line":null},{"a":135,"b":37,"type":"taxi","line":null},{"a":135,"b":127,"type":"taxi","line":null},{"a":136,"b":137,"type":"taxi","line":null},{"a":137,"b":138,"type":"taxi","line":null},{"a":137,"b":128,"type":"taxi","line":null},{"a":138,"b":139,"type":"taxi","line":null},{"a":139,"b":122,"type":"taxi","line":null},{"a":13,"b":12,"type":"metro","line":"A"},{"a":12,"b":11,"type":"metro","line":"A"},{"a":11,"b":10,"type":"metro","line":"A"},{"a":10,"b":9,"type":"metro","line":"A"},{"a":9,"b":14,"type":"metro","line":"A"},{"a":14,"b":15,"type":"metro","line":"A"},{"a":15,"b":16,"type":"metro","line":"A"},{"a":16,"b":17,"type":"metro","line":"A"},{"a":17,"b":18,"type":"metro","line":"A"},{"a":18,"b":19,"type":"metro","line":"A"},{"a":19,"b":20,"type":"metro","line":"A"},{"a":20,"b":21,"type":"metro","line":"A"},{"a":21,"b":22,"type":"metro","line":"A"},{"a":16,"b":23,"type":"metro","line":"B"},{"a":23,"b":24,"type":"metro","line":"B"},{"a":24,"b":25,"type":"metro","line":"B"},{"a":25,"b":26,"type":"metro","line":"B"},{"a":26,"b":27,"type":"metro","line":"B"},{"a":27,"b":28,"type":"metro","line":"B"},{"a":28,"b":29,"type":"metro","line":"B"},{"a":29,"b":30,"type":"metro","line":"B"},{"a":9,"b":8,"type":"metro","line":"C"},{"a":8,"b":7,"type":"metro","line":"C"},{"a":7,"b":6,"type":"metro","line":"C"},{"a":6,"b":5,"type":"metro","line":"C"},{"a":1,"b":2,"type":"metro","line":"D"},{"a":2,"b":3,"type":"metro","line":"D"},{"a":3,"b":4,"type":"metro","line":"D"},{"a":4,"b":11,"type":"metro","line":"D"},{"a":11,"b":31,"type":"metro","line":"D"},{"a":31,"b":26,"type":"metro","line":"D"},{"a":26,"b":32,"type":"metro","line":"D"},{"a":32,"b":33,"type":"metro","line":"D"},{"a":33,"b":34,"type":"metro","line":"D"},{"a":34,"b":35,"type":"metro","line":"D"},{"a":35,"b":36,"type":"metro","line":"D"},{"a":36,"b":37,"type":"metro","line":"D"},{"a":37,"b":38,"type":"metro","line":"D"},{"a":38,"b":39,"type":"metro","line":"D"},{"a":28,"b":29,"type":"tram","line":"T1"},{"a":29,"b":13,"type":"tram","line":"T1"},{"a":13,"b":12,"type":"tram","line":"T1"},{"a":12,"b":31,"type":"tram","line":"T1"},{"a":31,"b":24,"type":"tram","line":"T1"},{"a":24,"b":16,"type":"tram","line":"T1"},{"a":16,"b":44,"type":"tram","line":"T1"},{"a":13,"b":40,"type":"tram","line":"T2"},{"a":40,"b":41,"type":"tram","line":"T2"},{"a":41,"b":32,"type":"tram","line":"T2"},{"a":32,"b":35,"type":"tram","line":"T2"},{"a":35,"b":43,"type":"tram","line":"T2"},{"a":16,"b":22,"type":"tram","line":"T3"},{"a":24,"b":25,"type":"tram","line":"T4"},{"a":25,"b":41,"type":"tram","line":"T4"},{"a":41,"b":37,"type":"tram","line":"T4"},{"a":37,"b":39,"type":"tram","line":"T4"},{"a":35,"b":36,"type":"tram","line":"T5"},{"a":36,"b":38,"type":"tram","line":"T5"},{"a":28,"b":27,"type":"tram","line":"T6"},{"a":27,"b":37,"type":"tram","line":"T6"},{"a":37,"b":36,"type":"tram","line":"T6"},{"a":24,"b":16,"type":"bus","line":"C1"},{"a":16,"b":42,"type":"bus","line":"C1"},{"a":24,"b":23,"type":"bus","line":"C2"},{"a":23,"b":42,"type":"bus","line":"C2"},{"a":4,"b":9,"type":"bus","line":"C3"},{"a":9,"b":14,"type":"bus","line":"C3"},{"a":14,"b":15,"type":"bus","line":"C3"},{"a":15,"b":16,"type":"bus","line":"C3"},{"a":16,"b":18,"type":"bus","line":"C3"},{"a":18,"b":22,"type":"bus","line":"C3"},{"a":5,"b":7,"type":"bus","line":"C13"},{"a":7,"b":9,"type":"bus","line":"C13"},{"a":9,"b":10,"type":"bus","line":"C13"},{"a":10,"b":11,"type":"bus","line":"C13"},{"a":29,"b":28,"type":"bus","line":"C7"},{"a":28,"b":41,"type":"bus","line":"C7"},{"a":41,"b":26,"type":"bus","line":"C7"},{"a":26,"b":31,"type":"bus","line":"C7"},{"a":79,"b":80,"type":"boat","line":"Vaporetto Saône"},{"a":80,"b":81,"type":"boat","line":"Vaporetto Saône"},{"a":81,"b":4,"type":"boat","line":"Vaporetto Saône"},{"a":84,"b":40,"type":"boat","line":"Vaporetto Saône"},{"a":40,"b":85,"type":"boat","line":"Vaporetto Saône"},{"a":85,"b":30,"type":"boat","line":"Vaporetto Saône"},{"a":30,"b":88,"type":"boat","line":"Vaporetto Saône"},{"a":15,"b":16,"type":"boat","line":"Vaporetto Rhône"},{"a":16,"b":23,"type":"boat","line":"Vaporetto Rhône"},{"a":23,"b":24,"type":"boat","line":"Vaporetto Rhône"},{"a":24,"b":31,"type":"boat","line":"Vaporetto Rhône"},{"a":31,"b":25,"type":"boat","line":"Vaporetto Rhône"},{"a":25,"b":95,"type":"boat","line":"Vaporetto Rhône"},{"a":95,"b":26,"type":"boat","line":"Vaporetto Rhône"},{"a":26,"b":41,"type":"boat","line":"Vaporetto Rhône"},{"a":41,"b":27,"type":"boat","line":"Vaporetto Rhône"},{"a":27,"b":28,"type":"boat","line":"Vaporetto Rhône"},{"a":28,"b":40,"type":"boat","line":"Vaporetto Rhône"},{"a":40,"b":29,"type":"boat","line":"Vaporetto Rhône"},{"a":29,"b":30,"type":"boat","line":"Vaporetto Rhône"}],"rivers":[{"name":"Saône","pts":[[360,20],[352,110],[358,210],[372,300],[358,400],[342,500],[358,610],[402,710],[452,800],[492,880],[520,960]]},{"name":"Rhône","pts":[[820,20],[806,130],[782,250],[748,370],[706,490],[666,600],[630,690],[598,780],[566,850],[540,915],[520,960]]}],"startCards":[70,130,139,56,24,97,90,134,49,80,113,55,44,83,132,28,77,35,14,137,58,85,68,53]};
 
 /* ===================== CONSTANTES DE RÈGLES ===================== */
 const TOTAL_ROUNDS = 22;            // règles Budapest fournies
 const REVEALS = [3, 8, 13, 18];     // tours où Mister X se montre
 const DET_TICKETS = { taxi: 10, bus: 8, tram: 6, metro: 2 };
+const XINIT_TICKETS = { taxi: 4, bus: 3, tram: 3, metro: 3 }; // Mister X : peu de tickets (règles standard)
 const DET_COLORS = ["#38bdf8", "#22c55e", "#f59e0b", "#a855f7", "#fb7185"];
 const LINE_COLORS = { A: "#e2231a", B: "#0072bc", C: "#f58220", D: "#00a04a" };
-const TYPE_COLORS = { taxi: "#caa84a", bus: "#7a8b99", tram: "#5bc2e7", metro: "#e2231a", boat: "#60a5fa" };
+const TYPE_COLORS = { taxi: "#a89050", bus: "#1aa098", tram: "#8a3fb0", metro: "#e2231a", boat: "#4a92c8" };
 const TYPE_LABEL = { taxi: "Taxi", bus: "Bus", tram: "Tram", metro: "Métro", black: "Ticket noir", boat: "Navette" };
 const TYPE_ICON = { taxi: "🚕", bus: "🚌", tram: "🚊", metro: "Ⓜ", black: "⬛", boat: "⛴" };
 
@@ -53,11 +54,15 @@ function detectiveMoves(pos, tickets, occupied) {
   }
   const r = {}; for (const k in out) r[k] = [...out[k]]; return r;
 }
-function xMoves(pos, detPos, hasBlack) {
+function xMoves(pos, detPos, tickets) {
+  // tickets : { taxi, bus, tram, metro, black }
   const normal = {}, black = {};
+  const hasBlack = (tickets.black || 0) > 0;
   for (const e of ADJ[pos]) {
     if (detPos.has(e.to)) continue;
-    if (e.type !== "boat") (normal[e.to] ||= new Set()).add(e.type);
+    // coup normal : nécessite un ticket du bon type (pas de navette sans ticket noir)
+    if (e.type !== "boat" && (tickets[e.type] || 0) > 0) (normal[e.to] ||= new Set()).add(e.type);
+    // ticket noir : n'importe quel transport, navette comprise
     if (hasBlack) (black[e.to] ||= new Set()).add(e.type);
   }
   const conv = (m) => { const r = {}; for (const k in m) r[k] = [...m[k]]; return r; };
@@ -89,7 +94,7 @@ function startGame(state) {
   state.phase = "playing";
   state.round = 1;
   state.turn = "mrx";
-  state.mrx = { pos: xStart, start: xStart, revealedPos: null, revealedRound: null, log: [], tickets: { black: P, x2: P }, doubleActive: false };
+  state.mrx = { pos: xStart, start: xStart, revealedPos: null, revealedRound: null, log: [], tickets: { ...XINIT_TICKETS, black: 5, x2: 2 }, doubleActive: false, doubleType: null };
   state.detectives = dets;
   state.result = null;
   state.message = "Mister X commence. Il se déplace en secret.";
@@ -361,15 +366,35 @@ function Game({ state, myId, mode, commit, code }) {
   const iControlX = me?.role === "mrx" || mode === "hotseat";
   const iControlDet = state.turn === "detectives" && (mode === "hotseat" || myPawns.length > 0);
 
-  // Mister X voit sa vraie position ; les détectives jamais (sauf révélation)
-  const showXTrue = (mode === "hotseat" && isXTurn && !hideX) || (me?.role === "mrx");
+  // Mister X voit sa vraie position ; les détectives jamais (sauf révélation aux tours dédiés).
+  // En écran partagé, la visibilité dépend UNIQUEMENT du tour (le même appareil joue les deux camps).
+  const showXTrue = mode === "hotseat"
+    ? (isXTurn && !hideX)            // hotseat : X visible seulement quand c'est son tour
+    : (me?.role === "mrx");          // en ligne : seul le joueur Mister X voit X
   const detPosSet = useMemo(() => new Set(state.detectives.map((d) => d.pos)), [state.detectives]);
 
   // calcul des coups légaux pour l'acteur courant
   const legal = useMemo(() => {
     if (state.phase !== "playing") return {};
     if (isXTurn && iControlX) {
-      const { normal, black } = xMoves(state.mrx.pos, detPosSet, state.mrx.tickets.black > 0);
+      const { normal, black } = xMoves(state.mrx.pos, detPosSet, state.mrx.tickets);
+      // 2e coup d'un double : même moyen de transport que le 1er, billet noir interdit
+      if (state.mrx.doubleActive) {
+        const dt = state.mrx.doubleType;
+        const out = {};
+        for (const k in normal) if (normal[k].includes(dt)) out[k] = [dt];
+        return out;
+      }
+      // 1er coup d'un double : uniquement les transports dont X possède ≥2 billets
+      // (pour garantir un 2e coup du même type) ; billet noir exclu du double.
+      if (doubleMove) {
+        const out = {};
+        for (const k in normal) {
+          const ok = normal[k].filter((t) => (state.mrx.tickets[t] || 0) >= 2);
+          if (ok.length) out[k] = ok;
+        }
+        return out;
+      }
       if (useBlack) return black;
       return normal;
     }
@@ -381,7 +406,7 @@ function Game({ state, myId, mode, commit, code }) {
       return detectiveMoves(p.pos, p.tickets, occupiedNodes(state.detectives, p.id));
     }
     return {};
-  }, [state, isXTurn, iControlX, useBlack, selPawn, detPosSet, myId, mode]);
+  }, [state, isXTurn, iControlX, useBlack, doubleMove, selPawn, detPosSet, myId, mode]);
 
   // auto-sélection d'un pion détective contrôlable
   useEffect(() => {
@@ -392,14 +417,31 @@ function Game({ state, myId, mode, commit, code }) {
     } else setSelPawn(null);
   }, [state.turn, state.detectives, myId, mode]);
 
-  // détection blocage de Mister X (à son tour, aucun coup)
+  // au début d'un tour de Mister X (hotseat) : on réaffiche sa position pour lui ; on remet les atouts à zéro
+  useEffect(() => {
+    if (isXTurn) { setHideX(false); setUseBlack(false); setDoubleMove(false); }
+  }, [isXTurn, state.round]);
+
+  // détection blocage de Mister X (à son 1er coup, aucun mouvement possible → défaite)
   useEffect(() => {
     if (state.phase !== "playing" || !isXTurn || !iControlX) return;
-    const { normal, black } = xMoves(state.mrx.pos, detPosSet, state.mrx.tickets.black > 0);
+    if (state.mrx.doubleActive) return; // le 2e coup d'un double est géré séparément
+    const { normal, black } = xMoves(state.mrx.pos, detPosSet, state.mrx.tickets);
     if (Object.keys(normal).length === 0 && Object.keys(black).length === 0) {
       commit((s) => { s.phase = "over"; s.result = { winner: "detectives", reason: "Blocage ! Mister X est encerclé, aucun mouvement possible." }; return s; });
     }
   }, [state.phase, isXTurn, iControlX]);
+
+  // 2e coup d'un double impossible (aucun même-transport accessible) → on termine le tour sans pénaliser
+  useEffect(() => {
+    if (state.phase !== "playing" || !isXTurn || !iControlX || !state.mrx.doubleActive) return;
+    const { normal } = xMoves(state.mrx.pos, detPosSet, state.mrx.tickets);
+    const dt = state.mrx.doubleType;
+    const possible = Object.keys(normal).some((k) => normal[k].includes(dt));
+    if (!possible) {
+      commit((s) => { s.mrx.doubleActive = false; s.mrx.doubleType = null; endXTurn(s); return s; });
+    }
+  }, [state.phase, isXTurn, iControlX, state.mrx?.doubleActive, state.mrx?.pos]);
 
   const onPanStart = (e) => {
     dragMoved.current = false;
@@ -429,16 +471,23 @@ function Game({ state, myId, mode, commit, code }) {
     setPendingTo(null);
     if (isXTurn && iControlX) {
       commit((s) => {
-        const isBlack = useBlack;
-        s.mrx.pos = to;
-        s.mrx.log.push({ round: s.round, type: isBlack ? "black" : type, part: s.mrx.doubleActive ? 2 : 1 });
-        if (isBlack) s.mrx.tickets.black -= 1;
-        if (doubleMove && !s.mrx.doubleActive) {
-          // premier des deux coups
-          s.mrx.doubleActive = true;
-          s.message = "Double coup : Mister X joue un second déplacement.";
+        const x = s.mrx;
+        const startingDouble = doubleMove && !x.doubleActive; // 1er coup d'un double
+        const inDouble = startingDouble || x.doubleActive;     // ce coup fait partie d'un double
+        // Le billet noir ne se combine PAS avec le double : noir uniquement hors double.
+        const isBlack = useBlack && !inDouble;
+        x.pos = to;
+        // Carte consignée → c'est elle que voient les détectives. Marquée « double » le cas échéant.
+        x.log.push({ round: s.round, type: isBlack ? "black" : type, part: inDouble ? (x.doubleActive ? 2 : 1) : 1, double: inDouble });
+        // consommation du ticket utilisé
+        if (isBlack) x.tickets.black = Math.max(0, x.tickets.black - 1);
+        else x.tickets[type] = Math.max(0, (x.tickets[type] || 0) - 1);
+        if (startingDouble) {
+          x.doubleActive = true;
+          x.doubleType = type; // le 2e coup devra utiliser le même transport
+          s.message = `Double coup : second déplacement en ${TYPE_LABEL[type]}.`;
         } else {
-          if (s.mrx.doubleActive) { s.mrx.tickets.x2 -= 1; s.mrx.doubleActive = false; }
+          if (x.doubleActive) { x.tickets.x2 = Math.max(0, x.tickets.x2 - 1); x.doubleActive = false; x.doubleType = null; }
           endXTurn(s);
         }
         return s;
@@ -453,6 +502,8 @@ function Game({ state, myId, mode, commit, code }) {
         const lm = detectiveMoves(p.pos, p.tickets, occ);
         if (!lm[to] || !lm[to].includes(type)) return null;
         p.tickets[type] -= 1;
+        // la carte dépensée par le détective rejoint la réserve de Mister X (règle officielle)
+        if (s.mrx && s.mrx.tickets) s.mrx.tickets[type] = (s.mrx.tickets[type] || 0) + 1;
         p.pos = to;
         return afterDetectiveMove(s, p);
       });
@@ -518,19 +569,23 @@ function Game({ state, myId, mode, commit, code }) {
               {/* contrôles Mister X */}
               {isXTurn && iControlX && (
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Vos atouts — Mister X</p>
+                  <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Vos cartes transport — Mister X</p>
+                  <div className="mb-3"><TicketBar pawn={{ tickets: state.mrx.tickets }} /></div>
+                  <p className="text-[11px] text-slate-500 mb-2">Chaque déplacement consomme une carte du transport choisi — et c'est cette carte qui est révélée aux détectives dans le carnet de route.</p>
+                  <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Atouts spéciaux</p>
                   <div className="grid grid-cols-2 gap-2 mb-2">
-                    <button onClick={() => setUseBlack((v) => !v)} disabled={state.mrx.tickets.black <= 0}
+                    <button onClick={() => { setUseBlack((v) => !v); setDoubleMove(false); }} disabled={state.mrx.tickets.black <= 0 || doubleMove || state.mrx.doubleActive}
                       className={"rounded-lg py-2 text-sm font-semibold border disabled:opacity-30 " + (useBlack ? "bg-slate-100 text-slate-900 border-slate-100" : "bg-slate-800 border-slate-700")}>
                       ⬛ Ticket noir ({state.mrx.tickets.black})
                     </button>
-                    <button onClick={() => setDoubleMove((v) => !v)} disabled={state.mrx.tickets.x2 <= 0 || state.mrx.doubleActive}
+                    <button onClick={() => { setDoubleMove((v) => !v); setUseBlack(false); }} disabled={state.mrx.tickets.x2 <= 0 || state.mrx.doubleActive || useBlack}
                       className={"rounded-lg py-2 text-sm font-semibold border disabled:opacity-30 " + (doubleMove ? "bg-[#e2231a] border-[#e2231a]" : "bg-slate-800 border-slate-700")}>
                       ✕2 Double coup ({state.mrx.tickets.x2})
                     </button>
                   </div>
-                  {state.mrx.doubleActive && <p className="text-xs text-amber-400 mb-2">Double coup en cours — jouez votre second déplacement.</p>}
-                  {useBlack && <p className="text-xs text-slate-300 mb-2">Le ticket noir masque votre moyen de transport et permet d'emprunter les navettes fluviales ⛴.</p>}
+                  {state.mrx.doubleActive && <p className="text-xs text-amber-400 mb-2">Double coup en cours — jouez votre 2<sup>e</sup> déplacement en <b>{TYPE_LABEL[state.mrx.doubleType]}</b> (même transport imposé).</p>}
+                  {doubleMove && !state.mrx.doubleActive && <p className="text-xs text-amber-400 mb-2">Double coup : les deux déplacements devront utiliser le <b>même</b> moyen de transport. Billet noir indisponible.</p>}
+                  {useBlack && <p className="text-xs text-slate-300 mb-2">Le ticket noir masque votre moyen de transport et permet d'emprunter les navettes fluviales ⛴. (Incompatible avec le double coup.)</p>}
                   <p className="text-xs text-slate-400">Cliquez une station surlignée pour vous y déplacer. Position visible par vous seul.</p>
                   {me?.role === "mrx" && <p className="text-sm mt-2">Position actuelle : <b className="text-[#e2231a]">{state.mrx.pos}</b></p>}
                 </div>
@@ -595,6 +650,111 @@ function Game({ state, myId, mode, commit, code }) {
   );
 }
 
+/* ===================== MONUMENTS DE LYON ===================== */
+/* Repères emblématiques dessinés sur la carte (coordonnées calées sur la géographie du plateau). */
+const LANDMARKS = [
+  { type: "basilica", x: 235, y: 430, label: "Fourvière" },
+  { type: "park",     x: 880, y: 215, rx: 95, ry: 78, label: "Parc de la Tête d'Or" },
+  { type: "tower",    x: 800, y: 470, label: "Tour Part-Dieu" },
+  { type: "square",   x: 530, y: 560, label: "Place Bellecour" },
+  { type: "hoteldv",  x: 470, y: 320, label: "Hôtel de Ville" },
+  { type: "museum",   x: 470, y: 905, label: "Confluence" },
+  { type: "stadium",  x: 640, y: 920, label: "Gerland" },
+  { type: "oldtown",  x: 320, y: 520, label: "Vieux Lyon" },
+  { type: "hill",     x: 470, y: 150, label: "Croix-Rousse" },
+];
+
+function Landmark({ m }) {
+  const { x, y, type } = m;
+  const lbl = (dy) => <text x={x} y={y + dy} textAnchor="middle" fontSize="11" fill="#6b5d3e" fontWeight="700" fontStyle="italic" style={{ paintOrder: "stroke" }} stroke="#efe9dc" strokeWidth="2.5">{m.label}</text>;
+  switch (type) {
+    case "park":
+      return (
+        <g opacity="0.9">
+          <ellipse cx={x} cy={y} rx={m.rx} ry={m.ry} fill="#bcd99a" stroke="#9cbf78" strokeWidth="1.5" />
+          <ellipse cx={x + 18} cy={y + 12} rx={m.rx * 0.42} ry={m.ry * 0.34} fill="#86bce0" stroke="#6aa6d0" strokeWidth="1" opacity="0.85" />
+          {[[-40,-30],[30,-38],[52,18],[-46,28],[5,-12]].map(([dx,dy],i)=>(
+            <g key={i}><circle cx={x+dx} cy={y+dy} r="9" fill="#5e9e4e" opacity="0.7"/></g>
+          ))}
+          <text x={x} y={y - m.ry - 6} textAnchor="middle" fontSize="11" fill="#3a6e20" fontWeight="700" fontStyle="italic">{m.label}</text>
+        </g>
+      );
+    case "basilica":
+      return (
+        <g>
+          <rect x={x-16} y={y-10} width="32" height="26" rx="2" fill="#f3ede0" stroke="#c9b98e" strokeWidth="1.2"/>
+          <rect x={x-13} y={y-26} width="9" height="18" fill="#f3ede0" stroke="#c9b98e" strokeWidth="1"/>
+          <rect x={x+4} y={y-26} width="9" height="18" fill="#f3ede0" stroke="#c9b98e" strokeWidth="1"/>
+          <polygon points={`${x-9},${y-26} ${x-8.5},${y-34} ${x-4},${y-26}`} fill="#cdbf94"/>
+          <polygon points={`${x+4},${y-26} ${x+8.5},${y-34} ${x+9},${y-26}`} fill="#cdbf94"/>
+          {lbl(30)}
+        </g>
+      );
+    case "tower":
+      return (
+        <g>
+          <rect x={x-9} y={y-34} width="18" height="48" rx="2" fill="#7fa8c9" stroke="#4e7795" strokeWidth="1.2"/>
+          <polygon points={`${x-9},${y-34} ${x},${y-50} ${x+9},${y-34}`} fill="#9cc1de" stroke="#4e7795" strokeWidth="1"/>
+          <line x1={x} y1={y-50} x2={x} y2={y-60} stroke="#4e7795" strokeWidth="1.5"/>
+          {[-26,-16,-6,4].map((dy,i)=><line key={i} x1={x-7} y1={y+dy} x2={x+7} y2={y+dy} stroke="#4e7795" strokeWidth="0.7" opacity="0.6"/>)}
+          {lbl(28)}
+        </g>
+      );
+    case "square":
+      return (
+        <g>
+          <rect x={x-26} y={y-16} width="52" height="32" rx="3" fill="#d9b96e" stroke="#b9954a" strokeWidth="1.3" opacity="0.85"/>
+          <circle cx={x} cy={y} r="4" fill="#8a6d34"/>
+          {lbl(30)}
+        </g>
+      );
+    case "hoteldv":
+      return (
+        <g>
+          <rect x={x-20} y={y-12} width="40" height="24" rx="1.5" fill="#efe6d2" stroke="#bba874" strokeWidth="1.2"/>
+          <rect x={x-3} y={y-22} width="6" height="12" fill="#efe6d2" stroke="#bba874" strokeWidth="1"/>
+          <polygon points={`${x-4},${y-22} ${x},${y-28} ${x+4},${y-22}`} fill="#bba874"/>
+          {lbl(26)}
+        </g>
+      );
+    case "museum":
+      return (
+        <g>
+          <polygon points={`${x-22},${y+10} ${x-14},${y-12} ${x+16},${y-16} ${x+22},${y+10}`} fill="#c9d2da" stroke="#8a99a6" strokeWidth="1.3"/>
+          {lbl(28)}
+        </g>
+      );
+    case "stadium":
+      return (
+        <g>
+          <ellipse cx={x} cy={y} rx="28" ry="18" fill="#9ccb7e" stroke="#6f9a54" strokeWidth="2"/>
+          <ellipse cx={x} cy={y} rx="16" ry="9" fill="none" stroke="#fff" strokeWidth="1.3" opacity="0.8"/>
+          {lbl(32)}
+        </g>
+      );
+    case "oldtown":
+      return (
+        <g opacity="0.92">
+          {[[-18,0,"#e0a86b"],[-6,-4,"#d4925a"],[6,0,"#e8b878"],[18,-2,"#d68f54"]].map(([dx,dy,c],i)=>(
+            <rect key={i} x={x+dx-6} y={y+dy-8} width="12" height="20" rx="1" fill={c} stroke="#a06a38" strokeWidth="0.8"/>
+          ))}
+          {lbl(24)}
+        </g>
+      );
+    case "hill":
+      return (
+        <g opacity="0.9">
+          {[[-24,2],[-8,-3],[8,1],[24,-2]].map(([dx,dy],i)=>(
+            <rect key={i} x={x+dx-5} y={y+dy-7} width="10" height="16" rx="1" fill="#cdb289" stroke="#a88a5e" strokeWidth="0.7"/>
+          ))}
+          {lbl(22)}
+        </g>
+      );
+    default:
+      return null;
+  }
+}
+
 /* ===================== PLATEAU SVG ===================== */
 function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX }) {
   const W = BOARD.width, H = BOARD.height;
@@ -602,9 +762,10 @@ function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX 
   state.detectives?.forEach((d) => (detByPos[d.pos] = d));
   const xRevealed = state.mrx?.revealedPos;
   const xTrue = state.mrx?.pos;
+  const isRevealRoundNow = xRevealed && state.mrx?.revealedRound === state.round;
 
   const edgeColor = (e) => e.type === "metro" ? (LINE_COLORS[e.line] || TYPE_COLORS.metro) : TYPE_COLORS[e.type];
-  const edgeW = { taxi: 1.6, bus: 3.5, tram: 4, boat: 3, metro: 6 };
+  const edgeW = { taxi: 1.6, bus: 3.6, tram: 4, boat: 3, metro: 6 };
 
   /* Presqu'île = polygone entre Saône et Rhône */
   const saone = BOARD.rivers[0].pts;
@@ -614,86 +775,70 @@ function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width={width} height={width * H / W} style={{ display: "block" }}>
       <defs>
-        {/* Grille de rues */}
-        <pattern id="streetGrid" x="0" y="0" width="44" height="44" patternUnits="userSpaceOnUse">
-          <line x1="44" y1="0" x2="0" y2="0" stroke="#c0bbb0" strokeWidth="0.35" />
-          <line x1="0" y1="0" x2="0" y2="44" stroke="#c0bbb0" strokeWidth="0.35" />
+        {/* Trame de rues */}
+        <pattern id="streetGrid" x="0" y="0" width="46" height="46" patternUnits="userSpaceOnUse">
+          <rect width="46" height="46" fill="none" />
+          <line x1="46" y1="0" x2="0" y2="0" stroke="#c7c0b2" strokeWidth="0.4" />
+          <line x1="0" y1="0" x2="0" y2="46" stroke="#c7c0b2" strokeWidth="0.4" />
         </pattern>
-        {/* Gradient eau */}
-        <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#5ba3d4" />
-          <stop offset="50%" stopColor="#7bbee8" />
-          <stop offset="100%" stopColor="#5ba3d4" />
-        </linearGradient>
+        {/* Trame de bâtiments (îlots urbains) */}
+        <pattern id="buildings" x="0" y="0" width="58" height="58" patternUnits="userSpaceOnUse">
+          <rect x="6" y="6" width="16" height="13" fill="#d8d0bf" stroke="#c3baa6" strokeWidth="0.5" />
+          <rect x="30" y="9" width="20" height="11" fill="#dcd4c4" stroke="#c3baa6" strokeWidth="0.5" />
+          <rect x="10" y="28" width="13" height="20" fill="#d4ccba" stroke="#c3baa6" strokeWidth="0.5" />
+          <rect x="32" y="32" width="18" height="16" fill="#dcd4c4" stroke="#c3baa6" strokeWidth="0.5" />
+        </pattern>
       </defs>
 
       {/* ── Fond carte ── */}
-      <rect x="0" y="0" width={W} height={H} fill="#e8e3d8" />
+      <rect x="0" y="0" width={W} height={H} fill="#e9e3d6" />
+      <rect x="0" y="0" width={W} height={H} fill="url(#buildings)" opacity="0.5" />
       <rect x="0" y="0" width={W} height={H} fill="url(#streetGrid)" />
 
-      {/* Blocs urbains (zones bâties hachurées) */}
-      {[
-        [0,0,290,270],[300,0,220,260],[530,0,230,260],[770,0,200,260],
-        [0,280,280,260],[560,280,200,260],[770,280,200,260],
-        [0,560,280,260],[560,560,200,260],[770,560,200,260],
-        [0,840,280,135],[560,840,200,135],[770,840,200,135],
-      ].map(([x,y,w,h],i) => (
-        <rect key={i} x={x} y={y} width={w} height={h} rx="2"
-          fill="#ddd8cc" stroke="#cac5ba" strokeWidth="0.6" opacity="0.65" />
-      ))}
+      {/* Presqu'île (teinte distincte entre les deux fleuves) */}
+      <polygon points={peninsula} fill="#e6e0d0" opacity="0.6" />
 
-      {/* Presqu'île (entre les deux fleuves) */}
-      <polygon points={peninsula} fill="#e2ddd2" opacity="0.85" />
-
-      {/* Espaces verts (parcs approximatifs) */}
-      <ellipse cx="155" cy="175" rx="50" ry="38" fill="#a8cc88" opacity="0.55" />
-      <ellipse cx="735" cy="155" rx="62" ry="42" fill="#a8cc88" opacity="0.55" />
-      <ellipse cx="870" cy="460" rx="38" ry="52" fill="#a8cc88" opacity="0.5" />
-      <ellipse cx="415" cy="760" rx="32" ry="26" fill="#a8cc88" opacity="0.5" />
-      <ellipse cx="80" cy="670" rx="28" ry="35" fill="#a8cc88" opacity="0.45" />
-      <text x="155" y="178" textAnchor="middle" fontSize="9" fill="#3a6e20" opacity="0.75" fontStyle="italic">Parc</text>
-      <text x="735" y="158" textAnchor="middle" fontSize="9" fill="#3a6e20" opacity="0.75" fontStyle="italic">Tête d'Or</text>
-
-      {/* ── Fleuves (3 couches : halo + corps + reflet) ── */}
+      {/* ── Fleuves (halo + corps + reflet) ── */}
       {BOARD.rivers.map((r, i) => (
         <polyline key={"rh"+i} points={r.pts.map(p => p.join(",")).join(" ")}
-          fill="none" stroke="#6aaee0" strokeWidth="40" strokeLinecap="round" opacity="0.25" />
+          fill="none" stroke="#6aaee0" strokeWidth="46" strokeLinecap="round" strokeLinejoin="round" opacity="0.22" />
       ))}
       {BOARD.rivers.map((r, i) => (
         <polyline key={"rb"+i} points={r.pts.map(p => p.join(",")).join(" ")}
-          fill="none" stroke="#4a92c8" strokeWidth="26" strokeLinecap="round" opacity="0.7" />
+          fill="none" stroke="#4a92c8" strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
       ))}
       {BOARD.rivers.map((r, i) => (
         <polyline key={"rl"+i} points={r.pts.map(p => p.join(",")).join(" ")}
-          fill="none" stroke="#88c4e8" strokeWidth="9" strokeLinecap="round" opacity="0.5" />
+          fill="none" stroke="#9fcfee" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
       ))}
-
       {/* Noms des fleuves */}
-      <text x="288" y="490" fontSize="12" fill="#1e5080" opacity="0.8" fontStyle="italic" fontWeight="600"
-        transform="rotate(-89 288 490)" textAnchor="middle">Saône</text>
-      <text x="494" y="490" fontSize="12" fill="#1e5080" opacity="0.8" fontStyle="italic" fontWeight="600"
-        transform="rotate(-89 494 490)" textAnchor="middle">Rhône</text>
+      <text x="330" y="560" fontSize="15" fill="#1e5080" opacity="0.85" fontStyle="italic" fontWeight="700"
+        transform="rotate(78 330 560)" textAnchor="middle">la Saône</text>
+      <text x="690" y="600" fontSize="15" fill="#1e5080" opacity="0.85" fontStyle="italic" fontWeight="700"
+        transform="rotate(72 690 600)" textAnchor="middle">le Rhône</text>
+
+      {/* ── Monuments emblématiques ── */}
+      {LANDMARKS.map((m, i) => <Landmark key={i} m={m} />)}
 
       {/* ── Arêtes transport ── */}
       {/* Taxi en dessous */}
       {BOARD.edges.filter(e => e.type === "taxi").map((e, i) => {
         const a = NODE[e.a], b = NODE[e.b];
         return <line key={"tx"+i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-          stroke="#a89050" strokeWidth="1.6" opacity="0.45" strokeLinecap="round" />;
+          stroke="#9c8448" strokeWidth="1.7" opacity="0.4" strokeLinecap="round" />;
       })}
-      {/* Bus, tram, bateau, métro */}
+      {/* Bus, tram, bateau, métro (avec liseré clair pour lisibilité) */}
       {["bus","tram","boat","metro"].map(tp =>
         BOARD.edges.filter(e => e.type === tp).map((e, i) => {
           const a = NODE[e.a], b = NODE[e.b];
           const col = edgeColor(e);
           return (
             <g key={tp+i}>
-              {/* Ombre de ligne */}
               <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                stroke="#00000030" strokeWidth={edgeW[tp]+2} strokeLinecap="round" />
+                stroke="#ffffff" strokeWidth={edgeW[tp]+2.4} strokeLinecap="round" opacity="0.55" />
               <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                stroke={col} strokeWidth={edgeW[tp]} opacity={0.92}
-                strokeDasharray={tp === "boat" ? "8 6" : undefined} strokeLinecap="round" />
+                stroke={col} strokeWidth={edgeW[tp]} opacity={0.95}
+                strokeDasharray={tp === "boat" ? "9 7" : undefined} strokeLinecap="round" />
             </g>
           );
         })
@@ -706,39 +851,42 @@ function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX 
           <g key={n.id} onClick={() => onNodeClick(n.id)} style={{ cursor: isLegal ? "pointer" : "default" }}>
             {isLegal && (
               <>
-                <circle cx={n.x} cy={n.y} r="20" fill="#fde04720" stroke="none" />
-                <circle cx={n.x} cy={n.y} r="17" fill="none" stroke="#fde047" strokeWidth="2.5" opacity="0.95" />
+                <circle cx={n.x} cy={n.y} r="21" fill="#fde04733" stroke="none" />
+                <circle cx={n.x} cy={n.y} r="18" fill="none" stroke="#facc15" strokeWidth="3" opacity="0.95" />
               </>
             )}
-            {/* Corps du nœud */}
             <circle cx={n.x} cy={n.y} r={n.metro ? 12 : 9}
-              fill={n.metro ? "#1a2540" : "#2d3a50"}
-              stroke={n.metro ? "#e8ecf4" : "#8899b0"}
+              fill={n.metro ? "#16213d" : "#314059"}
+              stroke={n.metro ? "#f1f4fa" : "#9fb0c6"}
               strokeWidth={n.metro ? 2.5 : 1.5} />
             <text x={n.x} y={n.y + 4} textAnchor="middle" fontSize={n.metro ? 9.5 : 8}
-              fill="#dce8f8" fontWeight="700">{n.id}</text>
-            {/* Nom station métro avec fond */}
+              fill="#e2eaf6" fontWeight="700">{n.id}</text>
             {n.name && (
               <g>
-                <rect x={n.x - 42} y={n.y - 28} width="84" height="14" rx="3" fill="#1a254088" />
-                <text x={n.x} y={n.y - 18} textAnchor="middle" fontSize="10" fill="#93c5fd" fontWeight="700">{n.name}</text>
+                <rect x={n.x - (n.name.length * 3.1 + 6)} y={n.y - 28} width={n.name.length * 6.2 + 12} height="15" rx="3" fill="#16213dd9" />
+                <text x={n.x} y={n.y - 17.5} textAnchor="middle" fontSize="10" fill="#bcd4f5" fontWeight="700">{n.name}</text>
               </g>
             )}
           </g>
         );
       })}
 
-      {/* Dernière position connue de X */}
-      {xRevealed && (!showXTrue || xRevealed !== xTrue) && (
-        <g>
-          <circle cx={NODE[xRevealed].x} cy={NODE[xRevealed].y} r="18"
-            fill="#f59e0b18" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4 3" />
-          <rect x={NODE[xRevealed].x - 28} y={NODE[xRevealed].y - 28} width="56" height="12" rx="2" fill="#92400e" />
-          <text x={NODE[xRevealed].x} y={NODE[xRevealed].y - 19} textAnchor="middle" fontSize="9" fill="#fde68a" fontWeight="700">
-            vu T{state.mrx.revealedRound}
-          </text>
-        </g>
-      )}
+      {/* Dernière position connue de Mister X (visible des détectives uniquement) */}
+      {xRevealed && (!showXTrue || xRevealed !== xTrue) && (() => {
+        const n = NODE[xRevealed];
+        return (
+          <g>
+            {isRevealRoundNow && <circle cx={n.x} cy={n.y} r="24" fill="#e2231a22" stroke="#e2231a" strokeWidth="2" opacity="0.7" />}
+            <circle cx={n.x} cy={n.y} r="16" fill="#2a0e0e" stroke="#e2231a" strokeWidth="3"
+              strokeDasharray={isRevealRoundNow ? undefined : "4 3"} />
+            <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="13" fill="#ff5a4d" fontWeight="900">X</text>
+            <rect x={n.x - 26} y={n.y - 30} width="52" height="13" rx="2" fill="#7f1d1d" />
+            <text x={n.x} y={n.y - 20} textAnchor="middle" fontSize="9" fill="#fecaca" fontWeight="700">
+              {isRevealRoundNow ? `révélé T${state.mrx.revealedRound}` : `vu T${state.mrx.revealedRound}`}
+            </text>
+          </g>
+        );
+      })()}
 
       {/* Pions détectives */}
       {state.detectives?.map((d) => {
@@ -746,21 +894,21 @@ function BoardSVG({ width, state, legal, onNodeClick, showXTrue, selPawn, hideX 
         const isSelected = selPawn === d.id;
         return (
           <g key={d.id}>
-            {isSelected && <circle cx={n.x} cy={n.y} r="17" fill="none" stroke="#ffffff60" strokeWidth="2" strokeDasharray="3 2" />}
-            <circle cx={n.x} cy={n.y} r="13" fill={d.color} stroke="#fff" strokeWidth="2.5" opacity={isSelected ? 1 : 0.88} />
+            {isSelected && <circle cx={n.x} cy={n.y} r="18" fill="none" stroke="#ffffff80" strokeWidth="2" strokeDasharray="3 2" />}
+            <circle cx={n.x} cy={n.y} r="13" fill={d.color} stroke="#fff" strokeWidth="2.5" opacity={isSelected ? 1 : 0.9} />
             <text x={n.x} y={n.y + 4.5} textAnchor="middle" fontSize="12" fill="#0f172a" fontWeight="900">{d.label}</text>
           </g>
         );
       })}
 
-      {/* Mister X */}
+      {/* Mister X — visible uniquement par le joueur Mister X (jamais par les détectives) */}
       {showXTrue && xTrue && !hideX && (() => {
         const n = NODE[xTrue];
         return (
           <g>
-            <circle cx={n.x} cy={n.y} r="18" fill="#e2231a30" stroke="none" />
-            <circle cx={n.x} cy={n.y} r="14" fill="#1a0a0a" stroke="#e2231a" strokeWidth="3.5" />
-            <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="14" fill="#e2231a" fontWeight="900">X</text>
+            <circle cx={n.x} cy={n.y} r="19" fill="#e2231a33" stroke="none" />
+            <circle cx={n.x} cy={n.y} r="14" fill="#16060a" stroke="#e2231a" strokeWidth="3.5" />
+            <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="14" fill="#ff5a4d" fontWeight="900">X</text>
           </g>
         );
       })()}
@@ -787,17 +935,18 @@ function TravelLog({ state }) {
         <div className="flex flex-wrap gap-1.5">
           {log.map((m, i) => (
             <div key={i} className="flex flex-col items-center">
-              <div className="w-9 h-9 rounded-md grid place-items-center text-lg border"
-                style={{ background: m.type === "black" ? "#0b0b0b" : "#241d12", borderColor: m.type === "black" ? "#444" : "#5a4a2a" }}
-                title={`Tour ${m.round} · ${TYPE_LABEL[m.type]}`}>
+              <div className="relative w-9 h-9 rounded-md grid place-items-center text-lg border"
+                style={{ background: m.type === "black" ? "#0b0b0b" : "#241d12", borderColor: m.double ? "#e2231a" : m.type === "black" ? "#444" : "#5a4a2a" }}
+                title={`Tour ${m.round} · ${TYPE_LABEL[m.type]}${m.double ? " · double coup" : ""}`}>
                 {TYPE_ICON[m.type]}
+                {m.double && <span className="absolute -top-1.5 -right-1.5 text-[8px] font-black bg-[#e2231a] text-white rounded px-0.5 leading-tight">×2</span>}
               </div>
               <span className="text-[9px] text-amber-700 mt-0.5">T{m.round}{m.part === 2 ? "b" : ""}</span>
             </div>
           ))}
         </div>
       )}
-      <p className="text-[10px] text-slate-500 mt-2">Révélations aux tours {REVEALS.join(", ")}.</p>
+      <p className="text-[10px] text-slate-500 mt-2">Révélations aux tours {REVEALS.join(", ")}. Le badge <span className="text-[#e2231a] font-bold">×2</span> indique un double coup.</p>
     </div>
   );
 }
